@@ -1,0 +1,13 @@
+{
+  "id": "dev.neucine.cyna-app-proof",
+  "name": "Cyna App Proof",
+  "entry": "index.html",
+  "capabilities": [],
+  "nativePlugin": "CynaVideoPlugin",
+  "resources": [
+    {
+      "source": "assets/sample.mp4",
+      "target": "media/sample.mp4"
+    }
+  ]
+}

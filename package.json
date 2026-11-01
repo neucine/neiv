@@ -1,0 +1,14 @@
+{
+  "name": "ceiv",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "prepack": "node scripts/build-frontend.mjs && cyna package pack packages/ceiv" },
+  "exports": {
+    "./sdk": { "types": "./frontend/dist/sdk.d.ts", "default": "./frontend/dist/sdk.js" },
+    "./slots": { "types": "./frontend/dist/slots.d.ts", "default": "./frontend/dist/slots.js" }
+  },
+  "bin": { "ceiv": "bin/ceiv.mjs" },
+  "engines": { "node": ">=22" },
+  "dependencies": { "weivjs": "0.1.2", "typescript": "5.9.3" },
+  "files": ["README.md", "bin", "app-build.sh", "app-run.sh", "frontend/dist", "native", "packages/ceiv/cyna.toml", "packages/ceiv/src", "packages/ceiv/dist/packages/ceiv", "scripts"]
+}

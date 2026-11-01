@@ -1,0 +1,139 @@
+<template>
+  <main>
+    <p class="eyebrow">Ceiv ordinary app</p>
+    <h1>Hello from Cyna</h1>
+    <p>This is a second app using the shared Mac host and a Weiv page.</p>
+    <div class="value">{{ value }}</div>
+    <button @click="doubleCount">Double with Cyna</button>
+    <button @click="slowDoubleCount">Slow double</button>
+    <button @click="openCynaWindow">Open Cyna window</button>
+    <button @click="renameCurrentWindow">Rename window</button>
+    <button @click="closeCurrentWindow">Close from Cyna</button>
+    <button @click="publishUpdate">Publish Cyna event</button>
+    <button @click="toggleDoubleAction">{{ doubleEnabled ? "Disable" : "Enable" }} menu action</button>
+    <button @click="showContextMenu">Context menu</button>
+    <button @click="confirmWithNative">Native confirm</button>
+    <button @click="checkFileCapability">Check file capability</button>
+    <button @click="checkServiceCapability">Check service capability</button>
+    <button @click="showNativeLabel">Native slot</button>
+    <button @click="testSurfaceLifecycle">Surface lifecycle</button>
+    <div id="native-label" class="native-slot"></div>
+    <label for="name">Text to score</label>
+    <input id="name" :value="name" @input="editName" @focus="enterName" @blur="leaveName" />
+    <button @click="scoreName">Score text</button>
+    <button @click="measurePayload">Measure record</button>
+    <p role="status">{{ status }}</p>
+    <p>{{ windowEvent }}</p>
+    <p>{{ nativeEvent }}</p>
+  </main>
+</template>
+<script lang="ts">
+  import { doubleValue, slowDouble, scoreText, sizePayload, openWindow, renameCurrent, closeCurrent, publishUpdate as publishNativeUpdate, showNativeLabel as setNativeLabel, surfaceLifecycle, fileDialogStatus } from "./generated/commands.ts";
+  import { createActionContext, popupContextMenu, dialogs, shell, clipboard, tray, notifications, setCloseHandler } from "ceiv/sdk";
+  import { events } from "./generated/events.ts";
+  import { attachNativeSlot } from "ceiv/slots";
+  let value = 2;
+  let name = "Cyna";
+  let status = "Ready";
+  let windowEvent = "Window events: waiting";
+  let nativeEvent = "Native event: waiting";
+  let doubleEnabled = true;
+  let viewActions: ReturnType<typeof createActionContext> | undefined;
+  setCloseHandler(async () => name === "Cyna" || await dialogs.confirm("Discard edited text and close?") );
+  events.subscribe("app.windows", event => weivUpdate(() => { windowEvent = `Window ${event.state}: ${event.window}`; }))
+    .catch(error => weivUpdate(() => { windowEvent = (error as Error).message; }));
+  events.subscribe("hello.updated", event => weivUpdate(() => { nativeEvent = event.message; }))
+    .catch(error => weivUpdate(() => { nativeEvent = (error as Error).message; }));
+  async function doubleCount() {
+    try { const next = await doubleValue(value); weivUpdate(() => { value = next; status = "Cyna returned " + next; }); }
+    catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+  const actions = createActionContext({ scope: "app", actions: { "hello.double": { run: doubleCount } } });
+  actions.activate();
+  function toggleDoubleAction() {
+    doubleEnabled = !doubleEnabled;
+    actions.update("hello.double", { enabled: doubleEnabled });
+  }
+  function enterName(event: Event) {
+    viewActions?.dispose();
+    viewActions = createActionContext({ scope: "view", element: event.target as HTMLElement,
+      actions: { "hello.double": { run: () => weivUpdate(() => { status = "View action won"; }) } } });
+    viewActions.activate();
+  }
+  function leaveName() { viewActions?.dispose(); viewActions = undefined; }
+  async function showContextMenu(event: Event) {
+    try { await popupContextMenu("hello.context", { element: event.target as HTMLElement }); }
+    catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+  async function confirmWithNative() {
+    try { const accepted = await dialogs.confirm("Continue with Ceiv?"); weivUpdate(() => { status = accepted ? "Confirmed" : "Cancelled"; }); }
+    catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+  async function showNativeLabel() {
+    try {
+      const element = document.getElementById("native-label");
+      if (element) attachNativeSlot(element, "hello_label");
+      await setNativeLabel();
+    } catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+  async function testSurfaceLifecycle() {
+    try { const result = await surfaceLifecycle(); weivUpdate(() => { status = result ? "Surface lifecycle passed" : "Surface lifecycle failed"; }); }
+    catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+  async function checkFileCapability() {
+    const denied = await fileDialogStatus();
+    weivUpdate(() => { status = denied === 1 ? "Cyna denied file dialog" : "File dialog available"; });
+  }
+  async function checkServiceCapability() {
+    let denied = 0;
+    try { await shell.openExternal("https://example.com"); } catch { denied++; }
+    try { await clipboard.readText(); } catch { denied++; }
+    try { await tray.setTitle("Ceiv"); } catch { denied++; }
+    try { await notifications.show("Ceiv", "Hello"); } catch { denied++; }
+    weivUpdate(() => { status = denied === 4 ? "Desktop services denied" : "Desktop service policy failed"; });
+  }
+  async function slowDoubleCount() {
+    status = "Slow command pending";
+    try { const next = await slowDouble(value); weivUpdate(() => { value = next; status = `Slow Cyna returned ${next}`; }); }
+    catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+  async function openCynaWindow() {
+    try { const opened = await openWindow(); weivUpdate(() => { status = opened ? "Cyna opened a window" : "Window open failed"; }); }
+    catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+  async function renameCurrentWindow() {
+    try { await renameCurrent(); }
+    catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+  async function closeCurrentWindow() {
+    try { await closeCurrent(); }
+    catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+  async function publishUpdate() {
+    try { await publishNativeUpdate(); }
+    catch (error) { weivUpdate(() => { nativeEvent = (error as Error).message; }); }
+  }
+  function editName(event: Event) { name = (event.target as HTMLInputElement).value; }
+  async function scoreName() {
+    try { const result = await scoreText(name, true, 2); weivUpdate(() => { status = `Score: ${result}`; }); }
+    catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+  async function measurePayload() {
+    try { const result = await sizePayload({ title: name, flags: [true, false], note: null }); weivUpdate(() => { status = `Record bytes: ${result}`; }); }
+    catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
+  }
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  main { min-height: 100vh; padding: 48px; background: #122536; color: #f4f8fc; font: 17px -apple-system, sans-serif; }
+  .eyebrow { color: #6ee7c2; text-transform: uppercase; letter-spacing: .13em; font-size: 12px; }
+  h1 { font-size: 42px; margin: 8px 0; }
+  p { max-width: 520px; line-height: 1.5; }
+  .value { font-size: 84px; font-weight: 700; margin: 20px 0; }
+  button { border: 0; border-radius: 8px; padding: 14px 20px; background: #6ee7c2; font: inherit; cursor: pointer; }
+  label { display: block; margin-top: 22px; }
+  input { display: block; padding: 10px; margin: 8px 0 16px; font: inherit; }
+  button + button { margin-left: 8px; }
+  .native-slot { height: 56px; margin: 12px 0; background: #d9f5ed; }
+</style>

@@ -1,0 +1,33 @@
+<template>
+  <main>
+    <h1>Ceiv Metal</h1>
+    <p>Optional native color surface in a web slot.</p>
+    <div id="color-slot"></div>
+    <button @click="showColor">Show color</button>
+    <button @click="hideColor">Destroy surface</button>
+    <p role="status">{{ status }}</p>
+  </main>
+</template>
+<script lang="ts">
+  import { show, hide } from "./generated/commands.ts";
+  import { attachNativeSlot } from "ceiv/slots";
+  let status = "Ready";
+  let detachSlot: (() => void) | undefined;
+  async function showColor() {
+    const result = await show();
+    const slot = document.getElementById("color-slot");
+    if (result && slot && !detachSlot) detachSlot = attachNativeSlot(slot, "color");
+    weivUpdate(() => { status = result ? "Metal surface shown" : "Metal surface unavailable"; });
+  }
+  async function hideColor() {
+    const result = await hide();
+    if (result) { detachSlot?.(); detachSlot = undefined; }
+    weivUpdate(() => { status = result ? "Surface destroyed" : "Destroy failed"; });
+  }
+</script>
+<style>
+  body { font: 18px -apple-system, sans-serif; }
+  main { max-width: 42rem; margin: 3rem auto; }
+  #color-slot { height: 240px; background: #dee8ef; margin-bottom: 1rem; }
+  button { margin-right: 0.75rem; }
+</style>

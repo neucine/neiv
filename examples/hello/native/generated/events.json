@@ -1,0 +1,11 @@
+{
+  "hello.updated": {
+    "type": "record",
+    "fields": {
+      "message": {
+        "type": "string",
+        "maxBytes": 64
+      }
+    }
+  }
+}

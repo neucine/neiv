@@ -1,0 +1,12 @@
+name = "ceiv_provider"
+version = "0.1.0"
+src = "src"
+type = "staticlib"
+entry = "src/lib.cy"
+
+[dependencies]
+ceiv = { version = "0.1.0" }
+
+[build]
+target = "native"
+opt = "release"

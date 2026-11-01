@@ -1,0 +1,53 @@
+<template>
+  <main>
+    <h1>Ceiv Provider</h1>
+    <p>A native view from this app's own plugin.</p>
+    <div id="provider-slot"></div>
+    <button @click="showSurface">Show surface</button>
+    <button @click="detachSurface">Detach</button>
+    <button @click="attachSurface">Attach</button>
+    <button @click="readScale">Read scale</button>
+    <button @click="focusSurface">Focus surface</button>
+    <button @click="hideSurface">Destroy surface</button>
+    <p role="status">{{ status }}</p>
+  </main>
+</template>
+<script lang="ts">
+  import { show, hide, detachSurface as detachNative, attachSurface as attachNative, scale, focusSurface as focusNative } from "./generated/commands.ts";
+  import { attachNativeSlot } from "ceiv/slots";
+  let status = "Ready";
+  let detachSlot: (() => void) | undefined;
+  async function showSurface() {
+    const result = await show();
+    const slot = document.getElementById("provider-slot");
+    if (result && slot && !detachSlot) detachSlot = attachNativeSlot(slot, "provider");
+    weivUpdate(() => { status = result ? "Provider surface shown" : "Provider unavailable"; });
+  }
+  async function hideSurface() {
+    const result = await hide();
+    if (result) { detachSlot?.(); detachSlot = undefined; }
+    weivUpdate(() => { status = result ? "Surface destroyed" : "Destroy failed"; });
+  }
+  async function detachSurface() {
+    const result = await detachNative();
+    weivUpdate(() => { status = result ? "Surface detached" : "Detach failed"; });
+  }
+  async function attachSurface() {
+    const result = await attachNative();
+    weivUpdate(() => { status = result ? "Surface attached" : "Attach failed"; });
+  }
+  async function readScale() {
+    const value = await scale();
+    weivUpdate(() => { status = value ? `Surface scale: ${value}x` : "Surface metrics unavailable"; });
+  }
+  async function focusSurface() {
+    const result = await focusNative();
+    weivUpdate(() => { status = result ? "Native surface focused" : "Native focus unavailable"; });
+  }
+</script>
+<style>
+  body { font: 18px -apple-system, sans-serif; }
+  main { max-width: 42rem; margin: 3rem auto; }
+  #provider-slot { height: 240px; background: #dee8ef; margin-bottom: 1rem; }
+  button { margin-right: 0.75rem; }
+</style>

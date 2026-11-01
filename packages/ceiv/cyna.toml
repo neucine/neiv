@@ -1,0 +1,9 @@
+name = "ceiv"
+version = "0.1.0"
+src = "src"
+type = "lib"
+entry = "src/lib.cy"
+
+[build]
+target = "native"
+opt = "release"

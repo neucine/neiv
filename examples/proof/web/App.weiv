@@ -1,0 +1,230 @@
+<template>
+  <main class="app">
+    <section class="card">
+      <p class="eyebrow">Cyna app framework proof</p>
+      <h1>Web UI, native surface</h1>
+      <p>Weiv owns the controls. Cyna processes commands. Native video plays in the preview region.</p>
+      <div class="content">
+        <div class="controls">
+          <p class="label">Counter</p>
+          <div class="count">{{ count }}</div>
+          <div class="actions">
+            <button @click="decrement">−1</button>
+            <button @click="increment">+1</button>
+          </div>
+          <div class="actions playback">
+            <button @click="togglePlayback">{{ playing ? "Pause" : "Play" }}</button>
+            <button @click="runBenchmark">Run 20 seeks</button>
+            <span class="time">{{ position.toFixed(2) }} / 10.00 s</span>
+          </div>
+          <div class="actions playback">
+            <button @click="detachVideo">Detach video</button>
+            <button @click="attachVideo">Attach video</button>
+          </div>
+          <p class="small">{{ benchSummary }}</p>
+          <label class="label" for="timeline">Video timeline</label>
+          <input id="timeline" type="range" min="0" max="1000" :value="timelineValue()" @pointerdown="beginScrub" @pointerup="endScrub" @pointercancel="endScrub" @input="seekPlayback" />
+          <p class="small">JS → native → JS acknowledgement: {{ bridgeMs }} ms</p>
+          <p class="small">Native receipt → seek completion: {{ seekMs }} ms</p>
+          <p class="small">Native receipt → decoded frame: {{ presentMs }} ms</p>
+          <p class="small">Native receipt → web indicator: {{ indicatorMs }} ms</p>
+        </div>
+        <div>
+          <p class="label">Native AVPlayer preview</p>
+          <div id="native-surface" class="surface-slot"></div>
+        </div>
+      </div>
+      <p class="status">{{ status }}</p>
+    </section>
+  </main>
+</template>
+
+<script lang="ts">
+  import { add, videoShow, videoDetach, videoAttach } from "./generated/commands.ts";
+  import { attachNativeSlot } from "ceiv/slots";
+
+  let count = 0;
+  let status = "Ready";
+  let pending = Promise.resolve();
+  let playing = false;
+  let position = 0;
+  let seekId = 0;
+  let scrubbing = false;
+  let seekInFlight = false;
+  let benchActive = false;
+  let benchSummary = "Benchmark idle";
+  let bridgeMs = "pending";
+  let seekMs = "pending";
+  let presentMs = "pending";
+  let indicatorMs = "pending";
+  let anchorPosition = 0;
+  let anchorReceived = 0;
+  let anchorRate = 0;
+  let anchorSeekId = -1;
+
+  function timelineValue() { return Math.round(position * 100); }
+
+  function animateTimeline(now: number) {
+    if (playing && anchorRate > 0 && !scrubbing && !seekInFlight && !benchActive &&
+        document.visibilityState === "visible") {
+      const next = Math.min(10, anchorPosition + (now - anchorReceived) * anchorRate / 1000);
+      if (Math.abs(next - position) >= .005) weivUpdate(() => { position = next; });
+    }
+    requestAnimationFrame(animateTimeline);
+  }
+
+  function receiveAnchor(event: any) {
+    const now = performance.now();
+    const predicted = anchorPosition + (now - anchorReceived) * anchorRate / 1000;
+    const drift = event.position - predicted;
+    if (!anchorReceived || !event.rate || anchorSeekId !== event.seekId ||
+        scrubbing || seekInFlight || benchActive || Math.abs(drift) > .2) {
+      anchorPosition = event.position;
+    } else {
+      anchorPosition = predicted + Math.max(-.03, Math.min(.03, drift * .25));
+    }
+    anchorReceived = now;
+    anchorRate = event.rate;
+    anchorSeekId = event.seekId;
+    if (!event.rate && !scrubbing && !seekInFlight && !benchActive)
+      weivUpdate(() => { position = event.position; });
+  }
+
+  function percentile(values: number[], fraction: number) {
+    const sorted = [...values].sort((a, b) => a - b);
+    return sorted[Math.ceil(fraction * sorted.length) - 1].toFixed(2);
+  }
+
+  function benchmarkSeek() {
+    const index = (window as any).cynaBenchSamples.length;
+    position = ((index * 37 + 11) % 90 + 5) / 10;
+    seekInFlight = true;
+    (window as any).cynaSeekStarted = performance.now();
+    postPlayback("seek", { position, seekId: ++seekId });
+  }
+
+  function runBenchmark() {
+    if (benchActive) return;
+    benchActive = true;
+    (window as any).cynaBenchSamples = [];
+    benchSummary = "Running 20 seeks…";
+    benchmarkSeek();
+  }
+
+  function postPlayback(action: string, extra: Record<string, number> = {}) {
+    (window as any).webkit.messageHandlers.surface.postMessage({ kind: "playback", action, ...extra });
+  }
+
+  (window as any).cynaPlayback = (event: any) => {
+    if (event.kind === "accepted" && event.seekId === seekId) {
+      weivUpdate(() => { bridgeMs = (performance.now() - (window as any).cynaSeekStarted).toFixed(2); });
+    } else if (event.kind === "anchor" && event.seekId === seekId) {
+      receiveAnchor(event);
+    } else if (event.kind === "seekCompleted" && event.seekId === seekId) {
+      weivUpdate(() => { seekMs = event.receiveToSeekMs.toFixed(2); });
+    } else if (event.kind === "frameReady" && event.seekId === seekId) {
+      weivUpdate(() => {
+        seekInFlight = false;
+        if (!scrubbing && !benchActive) position = event.position;
+        presentMs = event.receiveToFrameMs.toFixed(2);
+      });
+      requestAnimationFrame(() => postPlayback("indicator", { seekId }));
+    } else if (event.kind === "frameTimeout" && event.seekId === seekId) {
+      weivUpdate(() => {
+        presentMs = "timeout";
+        seekInFlight = false;
+        if (benchActive) {
+          benchSummary = `Stopped: frame timeout after ${(window as any).cynaBenchSamples.length} seeks`;
+          benchActive = false;
+        }
+      });
+    } else if (event.kind === "measurement" && event.seekId === seekId) {
+      weivUpdate(() => {
+        indicatorMs = event.receiveToIndicatorMs.toFixed(2);
+        if (benchActive) {
+          (window as any).cynaBenchSamples.push(event.receiveToFrameMs);
+          if ((window as any).cynaBenchSamples.length === 20) {
+            benchSummary = `Decoded frame, n=20: median ${percentile((window as any).cynaBenchSamples, .5)} ms; p95 ${percentile((window as any).cynaBenchSamples, .95)} ms`;
+            benchActive = false;
+          } else {
+            benchSummary = `Running 20 seeks: ${(window as any).cynaBenchSamples.length}/20`;
+            setTimeout(benchmarkSeek, 30);
+          }
+        }
+      });
+    }
+  };
+
+  function togglePlayback() {
+    playing = !playing;
+    postPlayback("toggle");
+  }
+
+  async function detachVideo() {
+    const result = await videoDetach();
+    weivUpdate(() => { status = result ? "Video detached" : "Detach unavailable"; });
+  }
+  async function attachVideo() {
+    const result = await videoAttach();
+    weivUpdate(() => { status = result ? "Video attached" : "Attach unavailable"; });
+  }
+
+  function beginScrub() { scrubbing = true; }
+  function endScrub() { scrubbing = false; }
+
+  function seekPlayback(event: Event) {
+    position = Number((event.target as HTMLInputElement).value) / 100;
+    seekInFlight = true;
+    (window as any).cynaSeekStarted = performance.now();
+    bridgeMs = "pending";
+    seekMs = "pending";
+    presentMs = "pending";
+    indicatorMs = "pending";
+    postPlayback("seek", { position, seekId: ++seekId });
+  }
+
+  requestAnimationFrame(async () => {
+    const slot = document.getElementById("native-surface");
+    if (!slot) return;
+    if (!await videoShow()) { weivUpdate(() => { status = "Video unavailable"; }); return; }
+    attachNativeSlot(slot, "preview");
+    requestAnimationFrame(animateTimeline);
+  });
+
+  function change(delta: number) {
+    // Serialize commands so rapid clicks each use the latest UI-owned value.
+    pending = pending.then(async () => {
+      const start = performance.now();
+      const value = await add(count, delta);
+      weivUpdate(() => {
+        count = value;
+        status = `Native round trip: ${(performance.now() - start).toFixed(2)} ms`;
+      });
+    }).catch((error) => { weivUpdate(() => { status = error.message; }); });
+  }
+
+  function increment() { change(1); }
+  function decrement() { change(-1); }
+</script>
+
+<style>
+  .app { font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #e8edf5; background: #101821; }
+  * { box-sizing: border-box; }
+  .app { min-height: 100vh; margin: -8px; display: grid; place-items: center; padding: 24px; }
+  .card { width: min(100%, 760px); padding: 32px; border: 1px solid #34475a; border-radius: 18px; background: #1b2936; }
+  .eyebrow { color: #83d7c1; text-transform: uppercase; letter-spacing: .12em; font-size: 12px; }
+  h1 { margin: 8px 0 12px; }
+  p { line-height: 1.5; color: #b8c6d2; }
+  .content { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  .label { display: block; margin: 14px 0 8px; color: #83d7c1; font-size: 13px; letter-spacing: .03em; }
+  .count { font-size: 58px; font-variant-numeric: tabular-nums; margin: 0 0 10px; }
+  .actions { display: flex; gap: 12px; }
+  .playback { align-items: center; margin-top: 22px; }
+  .playback button { font-size: 14px; min-width: 72px; }
+  .time { font-variant-numeric: tabular-nums; color: #b8c6d2; }
+  button { border: 0; border-radius: 9px; padding: 8px 16px; font-size: 20px; background: #83d7c1; cursor: pointer; }
+  input { width: 100%; accent-color: #83d7c1; }
+  .small { font-size: 12px; margin: 4px 0; }
+  .surface-slot { width: 300px; height: 220px; border-radius: 12px; background: #273647; }
+  .status { margin-bottom: 0; font-variant-numeric: tabular-nums; }
+</style>

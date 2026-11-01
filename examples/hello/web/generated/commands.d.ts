@@ -1,0 +1,20 @@
+// Generated from Cyna command exports. Do not edit.
+import type { InvokeOptions } from "ceiv/sdk";
+export declare function openWindow(options?: InvokeOptions): Promise<number>;
+export declare function publishUpdate(options?: InvokeOptions): Promise<number>;
+export declare function showNativeLabel(options?: InvokeOptions): Promise<number>;
+export declare function surfaceLifecycle(options?: InvokeOptions): Promise<number>;
+export declare function renameCurrent(options?: InvokeOptions): Promise<number>;
+export declare function closeCurrent(options?: InvokeOptions): Promise<number>;
+export declare function fileDialogStatus(options?: InvokeOptions): Promise<number>;
+export declare function serviceDenial(options?: InvokeOptions): Promise<number>;
+export declare function optionalServiceDenial(options?: InvokeOptions): Promise<number>;
+export declare function appIdentity(options?: InvokeOptions): Promise<number>;
+export declare function doubleValue(value: number, options?: InvokeOptions): Promise<number>;
+export declare function slowDouble(value: number, options?: InvokeOptions): Promise<number>;
+export declare function scoreText(text: string, enabled: boolean, factor: number, options?: InvokeOptions): Promise<number>;
+export declare function sizePayload(payload: { title: string; flags: Array<boolean>; note?: string | null | undefined }, options?: InvokeOptions): Promise<number>;
+export declare function labelText(options?: InvokeOptions): Promise<string>;
+export declare function halfValue(value: number, options?: InvokeOptions): Promise<number>;
+export declare function invert(value: boolean, options?: InvokeOptions): Promise<boolean>;
+export declare function summary(options?: InvokeOptions): Promise<{ message: string; values: Array<number>; enabled?: boolean | null | undefined }>;

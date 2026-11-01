@@ -1,0 +1,6 @@
+{
+  "id": "dev.neucine.ceiv.hello",
+  "name": "Ceiv Hello",
+  "entry": "index.html",
+  "capabilities": []
+}

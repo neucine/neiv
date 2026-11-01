@@ -1,0 +1,14 @@
+{
+  "name": "ceiv-video-proof",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "ceiv check .",
+    "build": "ceiv build .",
+    "run": "ceiv run ."
+  },
+  "dependencies": {
+    "ceiv": "0.1.0"
+  }
+}
