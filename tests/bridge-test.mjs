@@ -24,7 +24,7 @@ const { doubleValue, scoreText, sizePayload, labelText, halfValue, invert, summa
   await import(pathToFileURL(join(fixture, "commands.js")).href);
 const { CynaError, currentWindow, setCloseHandler, createActionContext,
   popupContextMenu, dialogs, shell, clipboard } =
-  await import(pathToFileURL(join(dirname(new URL(import.meta.url).pathname), "../packages/ceiv/frontend/dist/sdk.js")).href);
+  await import(pathToFileURL(join(dirname(new URL(import.meta.url).pathname), "../packages/ceiv/dist/sdk.js")).href);
 const { events } = await import(pathToFileURL(join(fixture, "events.js")).href);
 const beforeHandshake = doubleValue(3);
 assert.deepEqual(messages, [{ kind: "hello" }]);

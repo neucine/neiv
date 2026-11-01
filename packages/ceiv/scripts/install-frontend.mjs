@@ -5,7 +5,7 @@ const output = resolve(process.argv[2]);
 const packages = join(output, "__weiv_packages/ceiv");
 mkdirSync(packages, { recursive: true });
 for (const name of ["sdk", "slots"]) {
-  copyFileSync(new URL(`../frontend/dist/${name}.js`, import.meta.url), join(packages, `${name}.js`));
+  copyFileSync(new URL(`../dist/${name}.js`, import.meta.url), join(packages, `${name}.js`));
 }
 function rewrite(directory) {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {

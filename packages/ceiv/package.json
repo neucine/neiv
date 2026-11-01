@@ -4,11 +4,11 @@
   "type": "module",
   "scripts": { "prepack": "node scripts/build-frontend.mjs && sh scripts/ensure-cyna-package.sh" },
   "exports": {
-    "./sdk": { "types": "./frontend/dist/sdk.d.ts", "default": "./frontend/dist/sdk.js" },
-    "./slots": { "types": "./frontend/dist/slots.d.ts", "default": "./frontend/dist/slots.js" }
+    "./sdk": { "types": "./dist/sdk.d.ts", "default": "./dist/sdk.js" },
+    "./slots": { "types": "./dist/slots.d.ts", "default": "./dist/slots.js" }
   },
   "bin": { "ceiv": "bin/ceiv.mjs" },
   "engines": { "node": ">=22" },
   "dependencies": { "weivjs": "0.1.2", "typescript": "5.9.3" },
-  "files": ["README.md", "bin", "app-build.sh", "frontend/dist", "native", "cyna-dist/packages/ceiv", "scripts"]
+  "files": ["README.md", "bin", "app-build.sh", "dist", "native", "cyna-dist/packages/ceiv", "scripts"]
 }

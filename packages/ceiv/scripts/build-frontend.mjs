@@ -5,15 +5,15 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-if (!existsSync(join(root, "frontend/sdk.ts"))) {
-  if (!existsSync(join(root, "frontend/dist/sdk.js")) || !existsSync(join(root, "frontend/dist/slots.js")))
+if (!existsSync(join(root, "src/sdk.ts"))) {
+  if (!existsSync(join(root, "dist/sdk.js")) || !existsSync(join(root, "dist/slots.js")))
     throw new Error("Ceiv frontend runtime is missing from the package");
   process.exit(0);
 }
 const compiler = createRequire(import.meta.url).resolve("typescript/bin/tsc");
 const result = spawnSync(process.execPath, [compiler, "--target", "ES2022", "--module", "ESNext",
-  "--lib", "ES2022,DOM", "--declaration", "--rootDir", join(root, "frontend"),
-  "--outDir", join(root, "frontend/dist"), join(root, "frontend/sdk.ts"),
-  join(root, "frontend/slots.ts")], { stdio: "inherit" });
+  "--lib", "ES2022,DOM", "--declaration", "--rootDir", join(root, "src"),
+  "--outDir", join(root, "dist"), join(root, "src/sdk.ts"),
+  join(root, "src/slots.ts")], { stdio: "inherit" });
 if (result.error) throw result.error;
 process.exit(result.status ?? 1);

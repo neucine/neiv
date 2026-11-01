@@ -12,7 +12,7 @@ and lifecycle boundary now used by that plugin.
 
 ## Repository layout
 
-`src/` and `cyna.toml` are the Cyna library. `packages/ceiv/` is the publishable npm SDK: frontend modules, CLI, build adapter, and the native host that standalone apps compile. `tests/` contains the development gates and host fixtures; `examples/` contains independent apps.
+`src/` and `cyna.toml` are the Cyna library. `packages/ceiv/` is the publishable npm SDK: TypeScript source in `src/`, CLI, build adapter, and the native host that standalone apps compile. `tests/` contains the development gates and host fixtures; `examples/` contains independent apps.
 
 ## Requirements
 
