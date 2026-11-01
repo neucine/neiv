@@ -67,7 +67,7 @@ The implementation split is consistent across packets:
 
 | Layer | Work it owns | Constraint |
 | --- | --- | --- |
-| `packages/ceiv/src` | Cyna value types and app-facing calls | No AppKit/WebKit types; typed errors at the boundary |
+| `src` | Cyna value types and app-facing calls | No AppKit/WebKit types; typed errors at the boundary |
 | `native/` | AppKit/WebKit objects, main-thread state, lifetimes and permissions | Per-window ownership; validate every page message |
 | `scripts/` | Export discovery, schema validation, TS and native adapter generation | One source declaration; deterministic output and drift check |
 | `web/generated/` | Natural Promise calls, typed events, action contexts and disposers | No raw WebKit message API in app code |

@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 repo=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-app=${1:-examples/hello}
-case "$app" in /*) ;; *) app="$repo/$app" ;; esac
+app=${1:-"$repo/../../examples/hello"}
+case "$app" in /*) ;; *) app="$PWD/$app" ;; esac
 app=$(CDPATH= cd -- "$app" && pwd)
 out="$app/build"
 mkdir -p "$out" "$app/native/generated" "$app/web/generated"

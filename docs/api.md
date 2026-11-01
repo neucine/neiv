@@ -9,7 +9,7 @@ For a new app, start with [where app code belongs](app-architecture.md).
 
 ## CLI
 
-Run `node /path/to/ceiv/bin/ceiv.mjs` or use the `ceiv` binary when the
+Run `node /path/to/ceiv/packages/ceiv/bin/ceiv.mjs` or use the `ceiv` binary when the
 package is installed or linked. Commands accept an app directory; `build`,
 `run`, and `check` default to the current directory.
 

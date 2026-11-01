@@ -10,6 +10,10 @@ through the emerging public `SurfaceId` API; the full M2 lifecycle gate is open.
 [Native slot foundation](docs/native-slots.md) describes the shared placement
 and lifecycle boundary now used by that plugin.
 
+## Repository layout
+
+`src/` and `cyna.toml` are the Cyna library. `packages/ceiv/` is the publishable npm SDK: frontend modules, CLI, build adapter, and the native host that standalone apps compile. `tests/` contains the development gates and host fixtures; `examples/` contains independent apps.
+
 ## Requirements
 
 macOS with Xcode Command Line Tools, Cyna 0.4.1, Node 22, and the `weivjs` dependency supplied by the npm package. This repository was
@@ -18,12 +22,12 @@ verified against Weiv commit `05c5024`.
 ## Start an app
 
 ```sh
-node bin/ceiv.mjs new ../my-app --id dev.example.my-app
-node bin/ceiv.mjs check ../my-app
-node bin/ceiv.mjs run ../my-app
+node packages/ceiv/bin/ceiv.mjs new ../my-app --id dev.example.my-app
+node packages/ceiv/bin/ceiv.mjs check ../my-app
+node packages/ceiv/bin/ceiv.mjs run ../my-app
 ```
 
-To build the optional Metal sample, run `node bin/ceiv.mjs build examples/metal`.
+To build the optional Metal sample, run `node packages/ceiv/bin/ceiv.mjs build examples/metal`.
 Its manifest selects `CynaColorPlugin`; an ordinary app leaves `nativePlugin`
 unset and does not link Metal.
 `examples/provider` shows an app supplied native view: its manifest names the
@@ -51,15 +55,15 @@ operations and native resources. Generated commands connect them.
 For a build from clean source copies with focused checks, run:
 
 ```sh
-sh scripts/m1-check.sh
+sh tests/m1-check.sh
 ```
 
 Set `KEEP_M1_OUTPUT=1` to retain the temporary bundles for a packaged UI
 smoke check. Generated files are checked with:
 
 ```sh
-node scripts/generate-commands.mjs --check examples/proof
-node scripts/generate-commands.mjs --check examples/hello
+node packages/ceiv/scripts/generate-commands.mjs --check examples/proof
+node packages/ceiv/scripts/generate-commands.mjs --check examples/hello
 ```
 
 ## App files
@@ -78,7 +82,7 @@ node scripts/generate-commands.mjs --check examples/hello
   The build generates matching `.d.ts` files for app commands and events.
   Framework declarations come from the npm package.
 
-Then run `node bin/ceiv.mjs build /absolute/path/to/new-app`. The CLI validates the
+Then run `node packages/ceiv/bin/ceiv.mjs build /absolute/path/to/new-app`. The CLI validates the
 manifest, generates bindings, compiles Weiv and Cyna, links the Mac host, and
 assembles the `.app`. It does not require edits to host source. The second app
 uses different identity, title, assets, and commands from the video proof.

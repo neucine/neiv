@@ -11,7 +11,7 @@ native renderer providers or release signing.
 | P2 actions | Shared menu/shortcut/context ID; source, window and data passed to page handlers; Cyna `menu.on_action` callback handles backend actions; explicit action state and acknowledgement. | Packaged hello's menu, Command-D, and context menu doubled the counter. Focused text field won the shortcut. Disabling the app action blocked Command-D and context selection. The backend menu action renamed the window. Bridge test covers source/window/context data, view precedence and disabled winner. |
 | P3 commands/events | Cyna exports continue to generate typed TS and host adapters; app event declarations generate payload types. `publish_app` and `publish_window` report invalid payload, missing window and queue saturation separately. Built-in lifecycle/window events get frontend validation. | Clean source builds and focused bridge/export tests passed. Packaged custom event delivery worked. The packaged host fixture showed `PASS host policy`, including the 17th subscription rejection, timeout, origin and frame checks. Bridge test rejects invalid resize payload and old sequences, and covers close handler replies. |
 
-Gate command: `KEEP_M1_OUTPUT=1 sh scripts/m1-check.sh` passed on 1 November
+Gate command: `KEEP_M1_OUTPUT=1 sh tests/m1-check.sh` passed on 1 November
 2026 after the expanded checks, producing `/tmp/ceiv-m1.V8gDLM`.
 This includes clean proof, hello and
 scaffold builds, generated binding drift checks, dispatch, asset, bridge and

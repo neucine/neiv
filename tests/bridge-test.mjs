@@ -12,7 +12,7 @@ globalThis.window = {
   addEventListener(name, handler) { listeners.set(name, handler); },
 };
 const generated = dirname(process.argv[2]);
-const fixture = mkdtempSync(join(dirname(new URL(import.meta.url).pathname), ".bridge-test-"));
+const fixture = mkdtempSync(join(dirname(new URL(import.meta.url).pathname), "../packages/ceiv/.bridge-test-"));
 process.on("exit", () => rmSync(fixture, { recursive: true, force: true }));
 for (const name of ["commands", "events"]) {
   const source = readFileSync(join(generated, `${name}.js`), "utf8")
@@ -24,7 +24,7 @@ const { doubleValue, scoreText, sizePayload, labelText, halfValue, invert, summa
   await import(pathToFileURL(join(fixture, "commands.js")).href);
 const { CynaError, currentWindow, setCloseHandler, createActionContext,
   popupContextMenu, dialogs, shell, clipboard } =
-  await import("ceiv/sdk");
+  await import(pathToFileURL(join(dirname(new URL(import.meta.url).pathname), "../packages/ceiv/frontend/dist/sdk.js")).href);
 const { events } = await import(pathToFileURL(join(fixture, "events.js")).href);
 const beforeHandshake = doubleValue(3);
 assert.deepEqual(messages, [{ kind: "hello" }]);

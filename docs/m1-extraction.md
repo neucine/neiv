@@ -1,12 +1,12 @@
 # M1 extraction status
 
-The first ordinary app path lives in `native/app_host.{h,m}` and `app-build.sh`.
+The first ordinary app path lives in `packages/ceiv/native/app_host.{h,m}` and `packages/ceiv/app-build.sh`.
 The host owns AppKit, WKWebView, window placement, the private app asset scheme,
 and asynchronous command dispatch. An app supplies `app.json`, `commands.json`,
 `cyna.toml`, `src/lib.cy`, and `web/App.weiv`. The Cyna public boundary is a C
 symbol named in the command schema; no AppKit or WebKit type appears in Cyna.
 
-Run `sh app-build.sh examples/hello` and then open
+Run `sh packages/ceiv/app-build.sh examples/hello` and then open
 `examples/hello/build/CeivApp.app`. The hello app has a distinct bundle ID,
 title, Weiv page, and `math.double` Cyna command. `sh build.sh` now builds the
 original video/counter proof through the same host. Its AVFoundation controller
@@ -23,7 +23,7 @@ adapter both check the schema; errors carry a code and message.
 
 ## Verification on 31 October 2026
 
-- `sh app-build.sh examples/hello`: passed using Cyna 0.4.1, local Weiv commit
+- `sh packages/ceiv/app-build.sh examples/hello`: passed using Cyna 0.4.1, local Weiv commit
   `05c5024`, macOS 26.6.2, and the macOS 27 SDK.
 - `plutil -lint examples/hello/build/CeivApp.app/Contents/Info.plist`: passed.
 - `open examples/hello/build/CeivApp.app`: process started; System Events
@@ -33,9 +33,9 @@ adapter both check the schema; errors carry a code and message.
   assertions. The packaged proof opened with title `Cyna hybrid framework proof`.
 - The hello app opened two windows with Command-N; Command-R reloaded the focused
   window; closing that window left the other open.
-- `node scripts/bridge-test.mjs examples/hello/build/web/generated/commands.js`:
+- `node tests/bridge-test.mjs examples/hello/build/web/generated/commands.js`:
   passed handshake, cancellation, invalidation, and late-reply checks.
-- `node scripts/generate-commands.mjs --check .` and the same command for
+- `node packages/ceiv/scripts/generate-commands.mjs --check .` and the same command for
   `examples/hello`: passed after generation.
 - The hello app's `text.score` and `data.size` commands returned `Score: 8` and
   `Record bytes: 49` in its packaged UI. Its native dispatch test covers valid

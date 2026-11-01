@@ -3,13 +3,13 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { discoverCommands } from "./discover-commands.mjs";
+import { discoverCommands } from "../packages/ceiv/scripts/discover-commands.mjs";
 
 const root = mkdtempSync(join(tmpdir(), "ceiv-discovery-"));
 mkdirSync(join(root, "src"));
 const source = join(root, "src", "lib.cy");
 const generate = () => {
-  const result = spawnSync(process.execPath, [new URL("./generate-commands.mjs", import.meta.url).pathname, root], { encoding: "utf8" });
+  const result = spawnSync(process.execPath, [new URL("../packages/ceiv/scripts/generate-commands.mjs", import.meta.url).pathname, root], { encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
 };
 try {
