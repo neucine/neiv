@@ -17,7 +17,13 @@ extern c("ceiv_surface_focus") fn host_focus(surface: c_long): c_int;
 extern c("ceiv_surface_release_focus") fn host_release_focus(surface: c_long): c_int;
 
 pub struct SurfaceId { value: c_long; }
+// Native providers may return a surface handle through their own ABI.
+// Keep handle validation and lifetime operations inside Ceiv.
 pub enum SurfaceError: i32 { invalid_options = 0, not_found, unsupported, already_attached, already_detached, slot_occupied, unavailable }
+pub fn from_raw_handle(handle: c_long): SurfaceId!SurfaceError {
+    if handle <= 0 { throw SurfaceError.not_found; }
+    return SurfaceId { value: handle };
+}
 pub struct SurfaceMetrics {
     pub width: c_double;
     pub height: c_double;

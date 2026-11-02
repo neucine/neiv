@@ -105,10 +105,13 @@ function create() {
   writeFileSync(join(root, "app.json"), JSON.stringify({
     id, name: title, entry: "index.html", capabilities: [],
   }, null, 2) + "\n");
-  writeFileSync(join(root, "cyna.toml"), `name = "${packageName}"\nversion = "0.1.0"\nsrc = "src"\ntype = "staticlib"\nentry = "src/lib.cy"\n\n[dependencies]\nceiv = { version = "0.1.0" }\n\n[build]\ntarget = "native"\nopt = "release"\n`);
+  writeFileSync(join(root, ".gitignore"), "/build/\n/web/generated/\n/native/generated/\n/cyna.lock\n");
+  writeFileSync(join(root, "cyna.toml"), `name = "${packageName}"\nversion = "0.1.2"\nsrc = "src"\ntype = "staticlib"\nentry = "src/lib.cy"\n\n[dependencies]\nceiv = { version = "0.1.3" }\n\n[build]\ntarget = "native"\nopt = "release"\n`);
   writeFileSync(join(root, "src/lib.cy"), `import { configure_window } from ceiv.lib;\n\nexport c("ceiv_app_configure") fn configure(): void {\n    const configured = configure_window(${JSON.stringify(title)}, 720, 480);\n}\n\nexport c("${packageName}_increment") fn increment(value: c_int): c_int {\n    return value + 1;\n}\n`);
   writeFileSync(join(root, "web/App.weiv"), `<template>\n  <main>\n    <h1>${title}</h1>\n    <p>{{ count }}</p>\n    <button @click="increase">Increment with Cyna</button>\n    <p role="status">{{ status }}</p>\n  </main>\n</template>\n<script lang="ts">\n  import { increment } from "./generated/commands.ts";\n  let count = 0;\n  let status = "Ready";\n  async function increase() {\n    try {\n      const next = await increment(count);\n      weivUpdate(() => { count = next; status = "Cyna returned " + next; });\n    } catch (error) {\n      weivUpdate(() => { status = (error as Error).message; });\n    }\n  }\n</script>\n<style>\n  body { font: 18px -apple-system, sans-serif; }\n  main { max-width: 48rem; margin: 4rem auto; }\n</style>\n`);
   run(process.execPath, [join(repo, "scripts/generate-commands.mjs"), root]);
+  run(process.execPath, [join(repo, "scripts/generate-callbacks.mjs"), root]);
+  run(process.execPath, [join(repo, "scripts/prepare-cyna.mjs"), root]);
   console.log(`Created ${root}`);
 }
 try {
@@ -123,9 +126,11 @@ try {
     else if (command === "check") {
       run("sh", [join(repo, "scripts/ensure-cyna-package.sh")]);
       run(process.execPath, [join(repo, "scripts/validate-app.mjs"), root]);
-      run(process.execPath, [join(repo, "scripts/generate-commands.mjs"), "--check", root]);
-      run("cyna", ["install", "."], root);
-      run("cyna", ["check", "."], root);
+      run(process.execPath, [join(repo, "scripts/generate-commands.mjs"), root]);
+      run(process.execPath, [join(repo, "scripts/generate-callbacks.mjs"), root]);
+      run(process.execPath, [join(repo, "scripts/prepare-cyna.mjs"), root]);
+      run("cyna", ["install", "build/cyna.toml"], root);
+      run("cyna", ["check", "build/cyna.toml"], root);
       console.log(`Ceiv check passed: ${root}`);
     } else {
       run("sh", [join(repo, "app-build.sh"), root]);

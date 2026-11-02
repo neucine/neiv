@@ -11,7 +11,16 @@ sh "$repo/scripts/ensure-cyna-package.sh"
 node "$repo/scripts/build-frontend.mjs"
 node "$repo/scripts/validate-app.mjs" "$app"
 node "$repo/scripts/generate-commands.mjs" "$app"
-(cd "$app" && cyna install . && cyna check . && cyna build .)
+node "$repo/scripts/generate-callbacks.mjs" "$app"
+node "$repo/scripts/prepare-cyna.mjs" "$app"
+library_name=$(node - "$app/cyna.toml" <<'EOF'
+const fs = require('fs');
+const match = fs.readFileSync(process.argv[2], 'utf8').match(/^name\s*=\s*"([A-Za-z_][A-Za-z_0-9]*)"/m);
+if (!match) process.exit(2);
+process.stdout.write(match[1]);
+EOF
+)
+(cd "$app" && cyna install build/cyna.toml && cyna check build/cyna.toml && cyna build build/cyna.toml --output "$out/lib$library_name.a")
 weiv_cli="$repo/node_modules/weivjs/bin/weiv.mjs"
 if [ ! -f "$weiv_cli" ]; then weiv_cli="$repo/../weivjs/bin/weiv.mjs"; fi
 if [ ! -f "$weiv_cli" ]; then weiv_cli="$repo/../weiv/packages/weiv/bin/weiv.mjs"; fi
@@ -37,13 +46,6 @@ int main(int argc, const char *argv[]) {
     return cyna_run_app(dispatch_command, ceiv_app_configure);
 }
 EOF
-library_name=$(node - "$app/cyna.toml" <<'EOF'
-const fs = require('fs');
-const match = fs.readFileSync(process.argv[2], 'utf8').match(/^name\s*=\s*"([A-Za-z_][A-Za-z_0-9]*)"/m);
-if (!match) process.exit(2);
-process.stdout.write(match[1]);
-EOF
-)
 library="$out/lib$library_name.a"
 test -f "$library"
 host_library=$(sh "$repo/native/build-host.sh" | tail -1)

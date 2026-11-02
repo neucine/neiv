@@ -835,6 +835,8 @@ static long long nextSurfaceHandle;
     CynaWindow *window = [[CynaWindow alloc] initWithManifest:self.manifest dispatcher:self.dispatcher];
     if (!window) return nil;
     window.handle = ++nextWindowHandle;
+    if ([window.plugin respondsToSelector:@selector(windowHandleAssigned:)])
+        [window.plugin windowHandleAssigned:window.handle];
     long long handle = window.handle;
     __weak CynaAppHost *weakSelf = self;
     window.onClose = ^(NSString *windowId) {

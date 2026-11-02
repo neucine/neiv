@@ -13,7 +13,7 @@ for app in proof hello; do
   mkdir -p "$target/src" "$target/web" "$target/assets"
   source="$source_root/examples/$app"
   cp "$source/app.json" "$source/cyna.toml" "$target/"
-  sed -i '' 's|ceiv = { version = "0.1.0" }|ceiv = { path = "../..", version = "0.1.0" }|' "$target/cyna.toml"
+  sed -i '' 's|ceiv = { version = "0.1.3" }|ceiv = { path = "../..", version = "0.1.3" }|' "$target/cyna.toml"
   cp "$source/src/lib.cy" "$target/src/lib.cy"
   cp "$source/web/App.weiv" "$target/web/App.weiv"
   if [ "$app" = proof ]; then cp "$source/assets/sample.mp4" "$target/assets/sample.mp4"; fi

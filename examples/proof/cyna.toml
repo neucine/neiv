@@ -1,11 +1,11 @@
 name = "cyna_app_core"
-version = "0.1.0"
+version = "0.1.3"
 src = "src"
 type = "staticlib"
 entry = "src/lib.cy"
 
 [dependencies]
-ceiv = { version = "0.1.0" }
+ceiv = { version = "0.1.3" }
 
 [build]
 target = "native"

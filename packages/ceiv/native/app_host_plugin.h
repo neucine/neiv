@@ -18,6 +18,7 @@
 - (void)navigationStarted;
 - (void)close;
 @optional
+- (void)windowHandleAssigned:(long long)handle;
 - (NSDictionary<NSString *, id<CynaSurfaceProvider>> *)surfaceProviders;
 - (BOOL)setColorSurface:(NSView *)surface level:(NSInteger)level;
 @end

@@ -164,7 +164,7 @@ belongs to M3.
 `sh build.sh` packages `examples/proof`, the counter and ten-second sample video.
 The example has its own `app.json`, `package.json`, Cyna project, Weiv page,
 and media asset. It declares released Ceiv versions without paths back into
-this repository. Once `ceiv@0.1.0` is available in the configured npm
+this repository. Once `ceiv@0.1.2` is available in the configured npm
 registry, it can be copied outside
 this checkout and built with `npm install && npm run build`.
 The page owns

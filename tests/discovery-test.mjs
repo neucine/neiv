@@ -30,6 +30,20 @@ try {
   assert.match(readFileSync(join(root, "web/generated/commands.ts"), "utf8"), /demoValue\(value: string/);
   assert.match(readFileSync(join(root, "web/generated/commands.d.ts"), "utf8"), /demoValue\(value: string, options\?: InvokeOptions\): Promise<number>/);
   assert.match(readFileSync(join(root, "native/generated/dispatch.inc"), "utf8"), /extern double demo_value\(const char \*\)/);
+  writeFileSync(source, '// @ceiv-configure\npub fn configure(): void {}\n' +
+    '// @ceiv {"returns":"boolean"}\npub fn demo_value(value: i32): i32 { return value; }\n');
+  generate();
+  const native = readFileSync(join(root, "src/generated/ceiv_generated_commands.cy"), "utf8");
+  assert.match(native, /export c\("ceiv_app_configure"\)/);
+  assert.match(native, /demo_value\(value as i32\) as c_int/);
+  writeFileSync(source, '// @ceiv\npub fn typed_score(value: i32): i32 { return value; }\n');
+  generate();
+  assert.match(readFileSync(join(root, "src/generated/ceiv_generated_commands.cy"), "utf8"), /export c\("ceiv_command_typed_score"\)/);
+  assert.match(readFileSync(join(root, "web/generated/commands.ts"), "utf8"), /typedScore\(value: number/);
+  writeFileSync(source, '// @ceiv {"returns":{"type":"record","fields":{"count":"int32"}}}\n' +
+    'pub fn snapshot(): string { return "{\\"count\\":1}"; }\n');
+  generate();
+  assert.match(readFileSync(join(root, "src/generated/ceiv_generated_commands.cy"), "utf8"), /bytes\.len\(\) >= capacity as usize/);
   writeFileSync(source, '// @ceiv-event {"topic":"demo.changed","payload":{"type":"record","fields":{"count":"int32"}}}\nexport c("demo_value") fn demo_value(value: c_int): c_int { return value; }\n');
   assert.equal(discoverCommands(root).events[0].topic, "demo.changed");
   generate();

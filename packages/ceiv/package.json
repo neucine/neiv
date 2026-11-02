@@ -1,6 +1,6 @@
 {
   "name": "ceiv",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "type": "module",
   "scripts": { "prepack": "node scripts/build-frontend.mjs && sh scripts/ensure-cyna-package.sh" },
   "exports": {
