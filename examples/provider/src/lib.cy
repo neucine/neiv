@@ -1,11 +1,11 @@
-import { configure_window } from ceiv.lib;
-import { current } from ceiv.window;
-import { SurfaceId, create_native, get_metrics, is_alive, attach, detach, focus, destroy } from ceiv.surface;
+import { configure_window } from neiv.lib;
+import { current } from neiv.window;
+import { SurfaceId, create_native, get_metrics, is_alive, attach, detach, focus, destroy } from neiv.surface;
 
 var active: ?SurfaceId = none;
 
-export c("ceiv_app_configure") fn configure(): void {
-    const configured = configure_window("Ceiv Provider", 640, 480);
+export c("neiv_app_configure") fn configure(): void {
+    const configured = configure_window("Neiv Provider", 640, 480);
 }
 
 export c("provider_show") fn show(): c_int {

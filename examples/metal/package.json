@@ -1,14 +1,14 @@
 {
-  "name": "ceiv-metal-example",
+  "name": "neiv-metal-example",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "ceiv check .",
-    "build": "ceiv build .",
-    "run": "ceiv run ."
+    "check": "neiv check .",
+    "build": "neiv build .",
+    "run": "neiv run ."
   },
   "dependencies": {
-    "ceiv": "0.1.0"
+    "neiv": "0.1.0"
   }
 }

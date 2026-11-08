@@ -1,6 +1,6 @@
-import { WindowId, raw_handle } from ceiv.window;
+import { WindowId, raw_handle } from neiv.window;
 
-extern c("ceiv_publish_event") fn host_publish(topic: c_str, payload_json: c_str, target: c_long): c_int;
+extern c("neiv_publish_event") fn host_publish(topic: c_str, payload_json: c_str, target: c_long): c_int;
 
 pub enum PublishError: i32 { invalid_payload = 0, queue_full, window_not_found }
 

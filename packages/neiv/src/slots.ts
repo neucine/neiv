@@ -1,4 +1,4 @@
-// Generated into apps by Ceiv. Optional native surface placement API.
+// Generated into apps by Neiv. Optional native surface placement API.
 type SlotBridge = { postMessage(message: Record<string, unknown>): void };
 
 export function attachNativeSlot(element: HTMLElement, slot: string): () => void {

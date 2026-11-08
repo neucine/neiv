@@ -1,22 +1,22 @@
-import { text_length, write_result } from ceiv.lib;
-import { configure_window } from ceiv.lib;
-import { open_with_options, WindowOptions, get_state, set_size, current, close, set_title, from_raw_handle } from ceiv.window;
-import { publish_app } from ceiv.events;
-import { Action, Node, set_application, register_context, set_state, on_action } from ceiv.menu;
-import { set_text } from ceiv.slot;
-import { current_app, id, on_lifecycle } from ceiv.app;
-import { open_file } from ceiv.dialog;
-import { open_external, ShellError } from ceiv.shell;
-import { write_text, ClipboardError } from ceiv.clipboard;
-import ceiv.surface;
-import ceiv.tray;
-import ceiv.notification;
-import { TrayError } from ceiv.tray;
-import { NotificationError } from ceiv.notification;
+import { text_length, write_result } from neiv.lib;
+import { configure_window } from neiv.lib;
+import { open_with_options, WindowOptions, get_state, set_size, current, close, set_title, from_raw_handle } from neiv.window;
+import { publish_app } from neiv.events;
+import { Action, Node, set_application, register_context, set_state, on_action } from neiv.menu;
+import { set_text } from neiv.slot;
+import { current_app, id, on_lifecycle } from neiv.app;
+import { open_file } from neiv.dialog;
+import { open_external, ShellError } from neiv.shell;
+import { write_text, ClipboardError } from neiv.clipboard;
+import neiv.surface;
+import neiv.tray;
+import neiv.notification;
+import { TrayError } from neiv.tray;
+import { NotificationError } from neiv.notification;
 
-// @ceiv-event {"topic":"hello.updated","payload":{"type":"record","fields":{"message":{"type":"string","maxBytes":64}}}}
+// @neiv-event {"topic":"hello.updated","payload":{"type":"record","fields":{"message":{"type":"string","maxBytes":64}}}}
 
-export c("ceiv_app_configure") fn configure(): void {
+export c("neiv_app_configure") fn configure(): void {
     const configured = configure_window("Hello from Cyna", 680, 460);
     const menu_items: [2]Node = [
         .action(Action { id: "hello.double", label: "Double", shortcut: "CmdOrCtrl+D" }),
@@ -30,7 +30,7 @@ export c("ceiv_app_configure") fn configure(): void {
     on_action(backend_action);
 }
 
-// @ceiv-callback
+// @neiv-callback
 export c("hello_backend_action") fn backend_action(action_id: c_str, source: c_str, window_handle: c_long, data_json: c_str): c_int {
     if strcmp(action_id, "hello.backend") != 0 { return 1; }
     const window = from_raw_handle(window_handle);
@@ -39,7 +39,7 @@ export c("hello_backend_action") fn backend_action(action_id: c_str, source: c_s
 }
 extern c("strcmp") fn strcmp(left: c_str, right: c_str): c_int;
 
-// @ceiv-callback
+// @neiv-callback
 export c("hello_lifecycle") fn lifecycle(state: c_str): void { }
 
 export c("hello_open_window") fn open_window(): c_int {
@@ -102,10 +102,10 @@ export c("hello_service_denial") fn service_denial(): c_int {
 }
 
 export c("hello_optional_service_denial") fn optional_service_denial(): c_int {
-    tray.set_title("Ceiv") catch (error) {
+    tray.set_title("Neiv") catch (error) {
         if error != TrayError.denied { return 0; }
     };
-    notification.show("Ceiv", "Hello") catch (error) {
+    notification.show("Neiv", "Hello") catch (error) {
         if error == NotificationError.denied { return 1; }
         return 0;
     };
@@ -115,7 +115,7 @@ export c("hello_optional_service_denial") fn optional_service_denial(): c_int {
 export c("hello_app_identity") fn app_identity(): c_int {
     if current_app() is app {
         if id(app) is app_id {
-            if app_id == "dev.neucine.ceiv.hello" { return 1; }
+            if app_id == "dev.neucine.neiv.hello" { return 1; }
             return 4;
         }
         return 3;
@@ -123,45 +123,45 @@ export c("hello_app_identity") fn app_identity(): c_int {
     return 2;
 }
 
-// @ceiv {"name":"math.double","args":{"value":{"type":"int32","min":-10000,"max":10000}}}
+// @neiv {"name":"math.double","args":{"value":{"type":"int32","min":-10000,"max":10000}}}
 export c("hello_double") fn double_value(value: c_int): c_int {
     return value * 2;
 }
 
 extern c("usleep") fn usleep(usec: c_uint): c_int;
-// @ceiv {"name":"math.slowDouble","args":{"value":{"type":"int32","min":-10000,"max":10000}}}
+// @neiv {"name":"math.slowDouble","args":{"value":{"type":"int32","min":-10000,"max":10000}}}
 export c("hello_slow_double") fn slow_double(value: c_int): c_int {
     const paused = usleep(500000);
     return value * 2;
 }
 
-// @ceiv {"name":"text.score","binding":"scoreText","args":{"text":{"type":"string","maxBytes":64},"enabled":{"type":"boolean"},"factor":{"type":"number","min":0,"max":10}}}
+// @neiv {"name":"text.score","binding":"scoreText","args":{"text":{"type":"string","maxBytes":64},"enabled":{"type":"boolean"},"factor":{"type":"number","min":0,"max":10}}}
 export c("hello_score") fn score(text: c_str, enabled: c_int, factor: c_double): c_int {
     if enabled == 0 { return 0; }
     return (text_length(text) as c_int) * (factor as c_int);
 }
 
 // Composite values cross this narrow C boundary as validated JSON text.
-// @ceiv {"name":"data.size","binding":"sizePayload","args":{"payload":{"type":"record","fields":{"title":{"type":"string","maxBytes":64},"flags":{"type":"array","items":"boolean","maxItems":4},"note":{"type":"optional","value":{"type":"string","maxBytes":32}}}}}}
+// @neiv {"name":"data.size","binding":"sizePayload","args":{"payload":{"type":"record","fields":{"title":{"type":"string","maxBytes":64},"flags":{"type":"array","items":"boolean","maxItems":4},"note":{"type":"optional","value":{"type":"string","maxBytes":32}}}}}}
 export c("hello_payload_size") fn payload_size(payload: c_str): c_int {
     return text_length(payload) as c_int;
 }
 
-// @ceiv {"name":"text.label","binding":"labelText","returns":{"type":"string","maxBytes":16}}
+// @neiv {"name":"text.label","binding":"labelText","returns":{"type":"string","maxBytes":16}}
 export c("hello_label") fn label(out: *c_char, capacity: c_int): c_int {
     return write_result(out, capacity, "Cyna OK");
 }
 
-// @ceiv {"name":"math.half","binding":"halfValue","args":{"value":{"type":"number","min":-100,"max":100}},"returns":{"type":"number","min":-50,"max":50}}
+// @neiv {"name":"math.half","binding":"halfValue","args":{"value":{"type":"number","min":-100,"max":100}},"returns":{"type":"number","min":-50,"max":50}}
 export c("hello_half") fn half(value: c_double): c_double { return value / 2.0; }
 
-// @ceiv {"name":"logic.invert","args":{"value":{"type":"boolean"}},"returns":"boolean"}
+// @neiv {"name":"logic.invert","args":{"value":{"type":"boolean"}},"returns":"boolean"}
 export c("hello_invert") fn invert(value: c_int): c_int {
     if value == 0 { return 1; }
     return 0;
 }
 
-// @ceiv {"name":"data.summary","returns":{"type":"record","fields":{"message":{"type":"string","maxBytes":32},"values":{"type":"array","items":"int32","maxItems":3},"enabled":{"type":"optional","value":"boolean"}}}}
+// @neiv {"name":"data.summary","returns":{"type":"record","fields":{"message":{"type":"string","maxBytes":32},"values":{"type":"array","items":"int32","maxItems":3},"enabled":{"type":"optional","value":"boolean"}}}}
 export c("hello_summary") fn summary(out: *c_char, capacity: c_int): c_int {
     return write_result(out, capacity, "{\"message\":\"ok\",\"values\":[1,2],\"enabled\":true}");
 }

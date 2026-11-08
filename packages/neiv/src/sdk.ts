@@ -1,7 +1,7 @@
-// Ceiv frontend runtime. App bindings and event declarations are generated separately.
+// Neiv frontend runtime. App bindings and event declarations are generated separately.
 type Reply = { id: number; ok: boolean; value?: unknown; error?: { code: string; message: string } };
 type Session = { protocol: number; window: string; handle: number; generation: number };
-export type WindowId = number & { readonly __ceivWindowId: unique symbol };
+export type WindowId = number & { readonly __neivWindowId: unique symbol };
 type TypeSpec = { type: string; min?: number; max?: number; maxBytes?: number; maxItems?: number; items?: TypeSpec; value?: TypeSpec; fields?: Record<string, TypeSpec> };
 export type InvokeOptions = { signal?: AbortSignal; deadlineMs?: number };
 export class CynaError extends Error { constructor(public code: string, message: string) { super(message); this.name = "CynaError"; } }
@@ -80,7 +80,7 @@ export function setCloseHandler(handler: () => boolean | Promise<boolean>): () =
 }
 (window as any).cynaCloseRequest = async (request: { requestId: string }) => {
   const active = session; if (!active || !closeHandler) return;
-  let allow = false; try { allow = (await closeHandler()) === true; } catch (error) { console.error("Ceiv close handler failed", error); }
+  let allow = false; try { allow = (await closeHandler()) === true; } catch (error) { console.error("Neiv close handler failed", error); }
   if (session === active) (window as any).webkit.messageHandlers.cyna.postMessage({ ...active, id: ++nextId, kind: "close-reply", requestId: request.requestId, allow });
 };
 export type ActionState = { enabled?: boolean; checked?: boolean; visible?: boolean };
@@ -105,7 +105,7 @@ function syncActionStates() {
 if (typeof document !== "undefined") { document.addEventListener("focusin", syncActionStates); document.addEventListener("focusout", () => queueMicrotask(syncActionStates)); }
 (window as any).cynaAction = async (request: ActionInvocation & { requestId: string }) => {
   const action = selectedAction(request.id); let ok = false;
-  try { if (action && action.enabled !== false && session?.handle === request.window && ["menu", "shortcut", "context"].includes(request.source)) { await action.run({ id: request.id, source: request.source, window: request.window, data: request.data }); ok = true; } } catch (error) { console.error("Ceiv action failed", error); }
+  try { if (action && action.enabled !== false && session?.handle === request.window && ["menu", "shortcut", "context"].includes(request.source)) { await action.run({ id: request.id, source: request.source, window: request.window, data: request.data }); ok = true; } } catch (error) { console.error("Neiv action failed", error); }
   if (session) try { (window as any).webkit.messageHandlers.cyna.postMessage({ ...session, id: ++nextId, kind: "action-reply", requestId: request.requestId, ok }); } catch {}
 };
 export function createActionContext(options: ActionContextOptions) {
@@ -123,7 +123,7 @@ export function popupContextMenu(menuId: string, options: { element: HTMLElement
   const box = options.element.getBoundingClientRect();
   let data: string; try { data = JSON.stringify(options.data ?? null); } catch { throw new CynaError("INVALID_ARGUMENT", "Invalid context data"); }
   if (!data || new TextEncoder().encode(data).length > 16384) throw new CynaError("INVALID_ARGUMENT", "Invalid context data");
-  return invoke("__ceiv.context.popup", { menuId, x: Math.max(0, box.left), y: Math.max(0, box.bottom), data },
+  return invoke("__neiv.context.popup", { menuId, x: Math.max(0, box.left), y: Math.max(0, box.bottom), data },
     { menuId: { type: "string", maxBytes: 100 }, x: { type: "number", min: 0, max: 100000 }, y: { type: "number", min: 0, max: 100000 }, data: { type: "string", maxBytes: 16384 } },
     { type: "optional", value: { type: "string", maxBytes: 100 } }) as Promise<string | null>;
 }
@@ -132,33 +132,33 @@ const dialogPath = { type: "optional", value: { type: "string", maxBytes: 4096 }
 const dialogExtensions = { type: "array", maxItems: 16, items: { type: "string", maxBytes: 12 } };
 export type FileDialogOptions = { title?: string; extensions?: string[] };
 export const dialogs = {
-  alert(message: string): Promise<void> { return invoke("__ceiv.dialog.alert", { message }, { message: dialogText }, { type: "boolean" }, { deadlineMs: 3600000 }).then(() => {}); },
-  confirm(message: string): Promise<boolean> { return invoke("__ceiv.dialog.confirm", { message }, { message: dialogText }, { type: "boolean" }, { deadlineMs: 3600000 }) as Promise<boolean>; },
-  openFile(title = "Open File"): Promise<string | null> { return invoke("__ceiv.dialog.openFile", { message: title }, { message: dialogText }, dialogPath, { deadlineMs: 3600000 }) as Promise<string | null>; },
-  saveFile(title = "Save File"): Promise<string | null> { return invoke("__ceiv.dialog.saveFile", { message: title }, { message: dialogText }, dialogPath, { deadlineMs: 3600000 }) as Promise<string | null>; },
+  alert(message: string): Promise<void> { return invoke("__neiv.dialog.alert", { message }, { message: dialogText }, { type: "boolean" }, { deadlineMs: 3600000 }).then(() => {}); },
+  confirm(message: string): Promise<boolean> { return invoke("__neiv.dialog.confirm", { message }, { message: dialogText }, { type: "boolean" }, { deadlineMs: 3600000 }) as Promise<boolean>; },
+  openFile(title = "Open File"): Promise<string | null> { return invoke("__neiv.dialog.openFile", { message: title }, { message: dialogText }, dialogPath, { deadlineMs: 3600000 }) as Promise<string | null>; },
+  saveFile(title = "Save File"): Promise<string | null> { return invoke("__neiv.dialog.saveFile", { message: title }, { message: dialogText }, dialogPath, { deadlineMs: 3600000 }) as Promise<string | null>; },
   openFiles(options: FileDialogOptions & { multiple?: boolean } = {}): Promise<string[] | null> {
-    return invoke("__ceiv.dialog.openFiles", { message: options.title ?? "Open Files", extensions: options.extensions ?? [], multiple: options.multiple ?? true },
+    return invoke("__neiv.dialog.openFiles", { message: options.title ?? "Open Files", extensions: options.extensions ?? [], multiple: options.multiple ?? true },
       { message: dialogText, extensions: dialogExtensions, multiple: { type: "boolean" } },
       { type: "optional", value: { type: "array", maxItems: 1024, items: { type: "string", maxBytes: 4096 } } }, { deadlineMs: 3600000 }) as Promise<string[] | null>;
   },
   saveFileWithOptions(options: FileDialogOptions = {}): Promise<string | null> {
-    return invoke("__ceiv.dialog.saveFileWithOptions", { message: options.title ?? "Save File", extensions: options.extensions ?? [] },
+    return invoke("__neiv.dialog.saveFileWithOptions", { message: options.title ?? "Save File", extensions: options.extensions ?? [] },
       { message: dialogText, extensions: dialogExtensions }, dialogPath, { deadlineMs: 3600000 }) as Promise<string | null>;
   },
 };
 export const shell = {
-  openExternal(url: string): Promise<void> { return invoke("__ceiv.shell.openExternal", { url }, { url: { type: "string", maxBytes: 2048 } }, { type: "boolean" }).then(() => {}); },
+  openExternal(url: string): Promise<void> { return invoke("__neiv.shell.openExternal", { url }, { url: { type: "string", maxBytes: 2048 } }, { type: "boolean" }).then(() => {}); },
 };
 export const clipboard = {
-  readText(): Promise<string | null> { return invoke("__ceiv.clipboard.readText", {}, {}, { type: "optional", value: { type: "string", maxBytes: 65535 } }) as Promise<string | null>; },
-  writeText(text: string): Promise<void> { return invoke("__ceiv.clipboard.writeText", { text }, { text: { type: "string", maxBytes: 65535 } }, { type: "boolean" }).then(() => {}); },
+  readText(): Promise<string | null> { return invoke("__neiv.clipboard.readText", {}, {}, { type: "optional", value: { type: "string", maxBytes: 65535 } }) as Promise<string | null>; },
+  writeText(text: string): Promise<void> { return invoke("__neiv.clipboard.writeText", { text }, { text: { type: "string", maxBytes: 65535 } }, { type: "boolean" }).then(() => {}); },
 };
 export const tray = {
-  setTitle(title: string): Promise<void> { return invoke("__ceiv.tray.setTitle", { title }, { title: { type: "string", maxBytes: 128 } }, { type: "boolean" }).then(() => {}); },
-  clear(): Promise<void> { return invoke("__ceiv.tray.clear", {}, {}, { type: "boolean" }).then(() => {}); },
+  setTitle(title: string): Promise<void> { return invoke("__neiv.tray.setTitle", { title }, { title: { type: "string", maxBytes: 128 } }, { type: "boolean" }).then(() => {}); },
+  clear(): Promise<void> { return invoke("__neiv.tray.clear", {}, {}, { type: "boolean" }).then(() => {}); },
 };
 export const notifications = {
-  show(title: string, body: string): Promise<void> { return invoke("__ceiv.notification.show", { title, body }, { title: { type: "string", maxBytes: 256 }, body: { type: "string", maxBytes: 2048 } }, { type: "boolean" }).then(() => {}); },
+  show(title: string, body: string): Promise<void> { return invoke("__neiv.notification.show", { title, body }, { title: { type: "string", maxBytes: 256 }, body: { type: "string", maxBytes: 2048 } }, { type: "boolean" }).then(() => {}); },
 };
 export async function invoke(command: string, args: Record<string, unknown>, argSpecs: Record<string, TypeSpec>, result: TypeSpec, options: InvokeOptions = {}, kind: "invoke" | "subscribe" = "invoke"): Promise<unknown> {
   if (!Object.keys(args).every(key => Object.prototype.hasOwnProperty.call(argSpecs, key)) || !Object.keys(argSpecs).every(key => valid(args[key], argSpecs[key]))) throw new CynaError("INVALID_ARGUMENT", "Invalid command arguments");
@@ -168,7 +168,7 @@ export async function invoke(command: string, args: Record<string, unknown>, arg
   if (options.signal?.aborted) throw new CynaError("CANCELLED", "Request cancelled");
   const active = session; if (!active) throw new CynaError("INVALIDATED", "Page is unavailable");
   const deadlineMs = options.deadlineMs ?? 10000;
-  if (!Number.isFinite(deadlineMs) || deadlineMs < 1 || deadlineMs > (command.startsWith("__ceiv.dialog.") ? 3600000 : 30000)) throw new CynaError("INVALID_ARGUMENT", "Invalid deadline");
+  if (!Number.isFinite(deadlineMs) || deadlineMs < 1 || deadlineMs > (command.startsWith("__neiv.dialog.") ? 3600000 : 30000)) throw new CynaError("INVALID_ARGUMENT", "Invalid deadline");
   return new Promise((resolve, reject) => {
     const id = ++nextId;
     const request = kind === "invoke" ? { ...active, id, kind, command, args, deadlineMs } : { ...active, id, kind, topic: command };

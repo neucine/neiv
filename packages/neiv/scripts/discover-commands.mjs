@@ -19,7 +19,7 @@ const compatible = (type, spec) => {
 
 export function discoverCommands(root) {
   const src = join(root, "src");
-  const files = readdirSync(src, { recursive: true }).filter(file => file.endsWith(".cy") && !file.startsWith("generated/") && !["ceiv_callbacks.cy", "ceiv_commands.cy"].includes(file)).sort();
+  const files = readdirSync(src, { recursive: true }).filter(file => file.endsWith(".cy") && !file.startsWith("generated/") && !["neiv_callbacks.cy", "neiv_commands.cy"].includes(file)).sort();
   const commands = [];
   const events = [];
   let configure = null;
@@ -28,7 +28,7 @@ export function discoverCommands(root) {
     const lines = source.split(/\r?\n/);
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index];
-      const eventMarker = line.match(/^\s*\/\/\s*@ceiv-event\s+(\{.*\})\s*$/);
+      const eventMarker = line.match(/^\s*\/\/\s*@neiv-event\s+(\{.*\})\s*$/);
       if (eventMarker) {
         const event = JSON.parse(eventMarker[1]);
         if (!event || typeof event.topic !== "string" || !/^[a-z][a-z0-9]*(?:\.[a-z][A-Za-z_0-9]*)+$/.test(event.topic) ||
@@ -38,30 +38,30 @@ export function discoverCommands(root) {
       }
       const old = line.match(/^\s*export c\("([A-Za-z_][A-Za-z_0-9]*)"\) fn ([A-Za-z_][A-Za-z_0-9]*)\s*\(([^)]*)\)\s*:\s*([^\s{]+)\s*\{/);
       const publicFunction = line.match(/^\s*pub fn ([A-Za-z_][A-Za-z_0-9]*)\s*\(([^)]*)\)\s*:\s*([^\s{]+)\s*\{/);
-      if (lines[index - 1]?.trim() === "// @ceiv-configure") {
+      if (lines[index - 1]?.trim() === "// @neiv-configure") {
         if (!publicFunction || publicFunction[2].trim() || publicFunction[3] !== "void" || configure)
-          throw new Error(`${file}:${index + 1}: invalid Ceiv configure function`);
+          throw new Error(`${file}:${index + 1}: invalid Neiv configure function`);
         configure = { module: file.slice(0, -3).replaceAll("/", "."), functionName: publicFunction[1] };
         continue;
       }
-      const marker = lines[index - 1]?.match(/^\s*\/\/\s*@ceiv\s+(\{.*\})\s*$/);
-      const plainMarker = lines[index - 1]?.trim() === "// @ceiv";
+      const marker = lines[index - 1]?.match(/^\s*\/\/\s*@neiv\s+(\{.*\})\s*$/);
+      const plainMarker = lines[index - 1]?.trim() === "// @neiv";
       const meta = marker ? JSON.parse(marker[1]) : {};
-      const start = old || (publicFunction && (marker || plainMarker) ? [null, `ceiv_command_${publicFunction[1]}`, ...publicFunction.slice(1)] : null);
+      const start = old || (publicFunction && (marker || plainMarker) ? [null, `neiv_command_${publicFunction[1]}`, ...publicFunction.slice(1)] : null);
       if (!start) {
         if (/^\s*export\s+c\b/.test(line) || /@link\.export\s*\(/.test(line))
           throw new Error(`${file}:${index + 1}: unsupported Cyna export spelling; use export c("symbol") fn on one line`);
         continue;
       }
       const [, symbol, functionName, parameterText, resultType] = start;
-      if (lines[index - 1]?.trim() === "// @ceiv-callback") continue;
-      if (symbol === "ceiv_app_configure") {
+      if (lines[index - 1]?.trim() === "// @neiv-callback") continue;
+      if (symbol === "neiv_app_configure") {
         if (parameterText.trim() || resultType !== "void")
-          throw new Error(`${file}:${index + 1}: ceiv_app_configure must be fn configure(): void`);
+          throw new Error(`${file}:${index + 1}: neiv_app_configure must be fn configure(): void`);
         continue;
       }
       if (Object.keys(meta).some(key => !["name", "binding", "args", "returns"].includes(key)))
-        throw new Error(`${file}:${index + 1}: unknown @ceiv metadata field`);
+        throw new Error(`${file}:${index + 1}: unknown @neiv metadata field`);
       if (!identifier.test(symbol)) throw new Error(`${file}:${index + 1}: invalid command symbol`);
       const raw = parameterText.trim() ? parameterText.split(",").map(part => {
         const match = part.trim().match(/^([A-Za-z_][A-Za-z_0-9]*):\s*(.+)$/);
@@ -82,7 +82,7 @@ export function discoverCommands(root) {
       if (meta.args && Object.keys(meta.args).some(name => !inputs.some(input => input.name === name)))
         throw new Error(`${file}:${index + 1}: bridge metadata names a missing parameter`);
       if (!buffer) base(resultType);
-      if (buffer && !meta.returns) throw new Error(`${file}:${index + 1}: buffer return needs @ceiv returns metadata`);
+      if (buffer && !meta.returns) throw new Error(`${file}:${index + 1}: buffer return needs @neiv returns metadata`);
       if (!buffer && meta.returns && !compatible(resultType, meta.returns))
         throw new Error(`${file}:${index + 1}: incompatible bridge return type`);
       const binding = meta.binding || camel(functionName);

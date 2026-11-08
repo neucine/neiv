@@ -1,9 +1,9 @@
 // Portable helpers for the generated C command boundary.
 extern c("strlen") fn strlen(text: c_str): c_size_t;
 extern c("memcpy") fn memcpy(dst: *c_void, src: *const c_void, size: c_size_t): *c_void;
-extern c("ceiv_set_initial_window") fn set_initial_window(title: c_str, width: c_int, height: c_int): c_int;
+extern c("neiv_set_initial_window") fn set_initial_window(title: c_str, width: c_int, height: c_int): c_int;
 
-// Call from the app's ceiv_app_configure export before the host starts.
+// Call from the app's neiv_app_configure export before the host starts.
 pub fn configure_window(title: c_str, width: c_int, height: c_int): bool {
     return set_initial_window(title, width, height) == 0;
 }

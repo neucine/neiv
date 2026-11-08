@@ -1,12 +1,12 @@
-import { open_window_options, window_state_values } from ceiv.buffer;
-extern c("ceiv_window_open_handle") fn host_open(title: c_str, width: c_int, height: c_int): c_long;
-extern c("ceiv_window_set_size") fn host_set_size(handle: c_long, width: c_int, height: c_int): c_int;
-extern c("ceiv_window_set_bounds") fn host_set_bounds(handle: c_long, x: c_int, y: c_int, width: c_int, height: c_int): c_int;
-extern c("ceiv_window_current_handle") fn host_current(): c_long;
-extern c("ceiv_window_focus_handle") fn host_focus(handle: c_long): c_int;
-extern c("ceiv_window_set_title_handle") fn host_set_title(handle: c_long, title: c_str): c_int;
-extern c("ceiv_window_close_handle") fn host_close(handle: c_long): c_int;
-extern c("ceiv_window_reload_handle") fn host_reload(handle: c_long): c_int;
+import { open_window_options, window_state_values } from neiv.buffer;
+extern c("neiv_window_open_handle") fn host_open(title: c_str, width: c_int, height: c_int): c_long;
+extern c("neiv_window_set_size") fn host_set_size(handle: c_long, width: c_int, height: c_int): c_int;
+extern c("neiv_window_set_bounds") fn host_set_bounds(handle: c_long, x: c_int, y: c_int, width: c_int, height: c_int): c_int;
+extern c("neiv_window_current_handle") fn host_current(): c_long;
+extern c("neiv_window_focus_handle") fn host_focus(handle: c_long): c_int;
+extern c("neiv_window_set_title_handle") fn host_set_title(handle: c_long, title: c_str): c_int;
+extern c("neiv_window_close_handle") fn host_close(handle: c_long): c_int;
+extern c("neiv_window_reload_handle") fn host_reload(handle: c_long): c_int;
 
 pub struct WindowId { value: c_long; }
 pub enum WindowError: i32 { invalid_options = 0, not_found, unavailable }

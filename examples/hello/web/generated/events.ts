@@ -1,6 +1,6 @@
 // Generated from Cyna event declarations. Do not edit.
-import { configureEvents, events } from "ceiv/sdk";
-declare module "ceiv/sdk" {
+import { configureEvents, events } from "neiv/sdk";
+declare module "neiv/sdk" {
   interface NativeEvents {
     "hello.updated": { message: string };
   }

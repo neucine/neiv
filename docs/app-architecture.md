@@ -1,22 +1,22 @@
 # Where app code belongs
 
-A Ceiv app has a Weiv page written in TypeScript and a native application
+A Neiv app has a Weiv page written in TypeScript and a native application
 module written in Cyna. The host connects them.
 
 | Layer | Owns | Examples |
 | --- | --- | --- |
 | Weiv / TypeScript | The page, direct user interaction, and short lived view state | Form input, selection, DOM focus, animation, view specific menu actions |
 | Cyna | App operations, durable state, and native resources | Documents, persistence, background work, windows, native surfaces, app wide menu actions |
-| Ceiv host | Bridge validation, windows, webviews, and capability enforcement | Argument checks, page generation checks, native slot placement |
+| Neiv host | Bridge validation, windows, webviews, and capability enforcement | Argument checks, page generation checks, native slot placement |
 
 ## Normal request flow
 
 1. A Weiv event handler reads view input and calls a typed function from
    `web/generated/commands.ts`.
-2. The exported Cyna function performs the app operation. It may call Ceiv's
+2. The exported Cyna function performs the app operation. It may call Neiv's
    Cyna API for native services.
 3. The result updates the Weiv view. For later native changes, Cyna publishes
-   an event and the page subscribes through `ceiv/sdk`.
+   an event and the page subscribes through `neiv/sdk`.
 
 The starter app's button calls `increment(value)` in TypeScript. That generated
 function invokes the Cyna `increment(value: c_int)` export and returns a typed

@@ -1,0 +1,58 @@
+#import <Foundation/Foundation.h>
+
+typedef id _Nullable (*CynaCommandDispatcher)(NSString * _Nonnull command, NSDictionary * _Nonnull args, NSDictionary * _Nullable * _Nonnull error);
+
+// AppKit and WebKit remain private to the host implementation.
+int neiv_set_initial_window(const char * _Nonnull title, int width, int height);
+void neiv_app_quit(void);
+void neiv_app_set_quit_on_last_window(int enabled);
+int neiv_app_current(void);
+int neiv_app_id(char * _Nonnull out, int capacity);
+int neiv_app_name(char * _Nonnull out, int capacity);
+void neiv_app_on_lifecycle(void (* _Nonnull callback)(const char * _Nonnull state));
+long long neiv_window_open_handle(const char * _Nonnull title, int width, int height);
+long long neiv_window_open_options(const char * _Nonnull title, int width, int height, int min_width, int min_height, int visible);
+int neiv_window_get_state(long long handle, int * _Nonnull values);
+int neiv_window_set_size(long long handle, int width, int height);
+int neiv_window_set_bounds(long long handle, int x, int y, int width, int height);
+long long neiv_window_current_handle(void);
+int neiv_window_focus_handle(long long handle);
+int neiv_window_set_title_handle(long long handle, const char * _Nonnull title);
+int neiv_window_close_handle(long long handle);
+int neiv_window_reload_handle(long long handle);
+int neiv_publish_event(const char * _Nonnull topic, const char * _Nonnull payload_json, long long target_handle);
+int neiv_menu_set_application(const char * _Nonnull tree_json);
+int neiv_menu_register_context(const char * _Nonnull identifier, const char * _Nonnull tree_json);
+int neiv_menu_set_state(const char * _Nonnull action_id, int enabled, int checked, int visible);
+void neiv_menu_on_action(int (* _Nonnull callback)(const char * _Nonnull action_id, const char * _Nonnull source, long long window_handle, const char * _Nonnull data_json));
+int neiv_dialog_alert(const char * _Nonnull message);
+int neiv_dialog_confirm(const char * _Nonnull message);
+int neiv_dialog_capability(int save);
+int neiv_dialog_open_file(char * _Nonnull out, int capacity);
+int neiv_dialog_save_file(char * _Nonnull out, int capacity);
+int neiv_dialog_paths(const char * _Nonnull extensions_json, int save, char * _Nonnull out, int capacity);
+int neiv_slot_set_text(long long window_handle, const char * _Nonnull slot_id, const char * _Nonnull text);
+long long neiv_surface_create_text(long long window_handle, const char * _Nonnull slot_id, const char * _Nonnull text);
+int neiv_surface_set_text(long long surface_handle, const char * _Nonnull text);
+int neiv_surface_destroy(long long surface_handle);
+int neiv_surface_set_accessibility_label(long long surface_handle, const char * _Nonnull label);
+long long neiv_surface_create_color(long long window_handle, const char * _Nonnull slot_id, int level);
+long long neiv_surface_create_native(long long window_handle, const char * _Nonnull slot_id, const char * _Nonnull kind, const char * _Nonnull options_json);
+int neiv_surface_set_color_level(long long surface_handle, int level);
+int neiv_surface_set_visible(long long surface_handle, int visible);
+int neiv_surface_set_suspended(long long surface_handle, int suspended);
+int neiv_surface_is_alive(long long surface_handle);
+int neiv_surface_attach(long long surface_handle);
+int neiv_surface_detach(long long surface_handle);
+int neiv_surface_get_metrics(long long surface_handle, double * _Nonnull values);
+int neiv_surface_get_capabilities(long long window_handle, const char * _Nonnull kind, int * _Nonnull values);
+int neiv_surface_focus(long long surface_handle);
+int neiv_surface_release_focus(long long surface_handle);
+int neiv_shell_open_external(const char * _Nonnull url);
+int neiv_clipboard_read_text(char * _Nonnull out, int capacity);
+int neiv_clipboard_write_text(const char * _Nonnull text);
+int neiv_clipboard_capability(int read);
+int neiv_tray_set_title(const char * _Nonnull title);
+int neiv_tray_clear(void);
+int neiv_notification_show(const char * _Nonnull title, const char * _Nonnull body);
+int cyna_run_app(CynaCommandDispatcher _Nonnull dispatcher, void (* _Nonnull configure)(void));

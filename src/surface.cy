@@ -1,24 +1,24 @@
-import { WindowId, raw_handle } from ceiv.window;
-import { surface_metrics_values, surface_capability_values } from ceiv.buffer;
+import { WindowId, raw_handle } from neiv.window;
+import { surface_metrics_values, surface_capability_values } from neiv.buffer;
 
-extern c("ceiv_surface_create_text") fn host_create_text(window: c_long, slot_id: c_str, text: c_str): c_long;
-extern c("ceiv_surface_set_text") fn host_set_text(surface: c_long, text: c_str): c_int;
-extern c("ceiv_surface_destroy") fn host_destroy(surface: c_long): c_int;
-extern c("ceiv_surface_set_accessibility_label") fn host_set_accessibility_label(surface: c_long, label: c_str): c_int;
-extern c("ceiv_surface_create_color") fn host_create_color(window: c_long, slot_id: c_str, level: c_int): c_long;
-extern c("ceiv_surface_create_native") fn host_create_native(window: c_long, slot_id: c_str, kind: c_str, options_json: c_str): c_long;
-extern c("ceiv_surface_set_color_level") fn host_set_color_level(surface: c_long, level: c_int): c_int;
-extern c("ceiv_surface_set_visible") fn host_set_visible(surface: c_long, visible: c_int): c_int;
-extern c("ceiv_surface_set_suspended") fn host_set_suspended(surface: c_long, suspended: c_int): c_int;
-extern c("ceiv_surface_is_alive") fn host_is_alive(surface: c_long): c_int;
-extern c("ceiv_surface_attach") fn host_attach(surface: c_long): c_int;
-extern c("ceiv_surface_detach") fn host_detach(surface: c_long): c_int;
-extern c("ceiv_surface_focus") fn host_focus(surface: c_long): c_int;
-extern c("ceiv_surface_release_focus") fn host_release_focus(surface: c_long): c_int;
+extern c("neiv_surface_create_text") fn host_create_text(window: c_long, slot_id: c_str, text: c_str): c_long;
+extern c("neiv_surface_set_text") fn host_set_text(surface: c_long, text: c_str): c_int;
+extern c("neiv_surface_destroy") fn host_destroy(surface: c_long): c_int;
+extern c("neiv_surface_set_accessibility_label") fn host_set_accessibility_label(surface: c_long, label: c_str): c_int;
+extern c("neiv_surface_create_color") fn host_create_color(window: c_long, slot_id: c_str, level: c_int): c_long;
+extern c("neiv_surface_create_native") fn host_create_native(window: c_long, slot_id: c_str, kind: c_str, options_json: c_str): c_long;
+extern c("neiv_surface_set_color_level") fn host_set_color_level(surface: c_long, level: c_int): c_int;
+extern c("neiv_surface_set_visible") fn host_set_visible(surface: c_long, visible: c_int): c_int;
+extern c("neiv_surface_set_suspended") fn host_set_suspended(surface: c_long, suspended: c_int): c_int;
+extern c("neiv_surface_is_alive") fn host_is_alive(surface: c_long): c_int;
+extern c("neiv_surface_attach") fn host_attach(surface: c_long): c_int;
+extern c("neiv_surface_detach") fn host_detach(surface: c_long): c_int;
+extern c("neiv_surface_focus") fn host_focus(surface: c_long): c_int;
+extern c("neiv_surface_release_focus") fn host_release_focus(surface: c_long): c_int;
 
 pub struct SurfaceId { value: c_long; }
 // Native providers may return a surface handle through their own ABI.
-// Keep handle validation and lifetime operations inside Ceiv.
+// Keep handle validation and lifetime operations inside Neiv.
 pub enum SurfaceError: i32 { invalid_options = 0, not_found, unsupported, already_attached, already_detached, slot_occupied, unavailable }
 pub fn from_raw_handle(handle: c_long): SurfaceId!SurfaceError {
     if handle <= 0 { throw SurfaceError.not_found; }

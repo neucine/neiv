@@ -1,4 +1,4 @@
-extern c("ceiv_notification_show") fn host_show(title: c_str, body: c_str): c_int;
+extern c("neiv_notification_show") fn host_show(title: c_str, body: c_str): c_int;
 
 pub enum NotificationError: i32 { denied = 0, invalid_content }
 

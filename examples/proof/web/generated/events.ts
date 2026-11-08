@@ -1,4 +1,4 @@
 // Generated from Cyna event declarations. Do not edit.
-import { configureEvents, events } from "ceiv/sdk";
+import { configureEvents, events } from "neiv/sdk";
 configureEvents({});
 export { events };

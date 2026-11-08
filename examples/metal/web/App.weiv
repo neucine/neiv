@@ -1,6 +1,6 @@
 <template>
   <main>
-    <h1>Ceiv Metal</h1>
+    <h1>Neiv Metal</h1>
     <p>Optional native color surface in a web slot.</p>
     <div id="color-slot"></div>
     <button @click="showColor">Show color</button>
@@ -10,7 +10,7 @@
 </template>
 <script lang="ts">
   import { show, hide } from "./generated/commands.ts";
-  import { attachNativeSlot } from "ceiv/slots";
+  import { attachNativeSlot } from "neiv/slots";
   let status = "Ready";
   let detachSlot: (() => void) | undefined;
   async function showColor() {

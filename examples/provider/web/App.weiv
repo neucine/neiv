@@ -1,6 +1,6 @@
 <template>
   <main>
-    <h1>Ceiv Provider</h1>
+    <h1>Neiv Provider</h1>
     <p>A native view from this app's own plugin.</p>
     <div id="provider-slot"></div>
     <button @click="showSurface">Show surface</button>
@@ -14,7 +14,7 @@
 </template>
 <script lang="ts">
   import { show, hide, detachSurface as detachNative, attachSurface as attachNative, scale, focusSurface as focusNative } from "./generated/commands.ts";
-  import { attachNativeSlot } from "ceiv/slots";
+  import { attachNativeSlot } from "neiv/slots";
   let status = "Ready";
   let detachSlot: (() => void) | undefined;
   async function showSurface() {

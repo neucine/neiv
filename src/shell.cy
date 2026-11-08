@@ -1,4 +1,4 @@
-extern c("ceiv_shell_open_external") fn host_open_external(url: c_str): c_int;
+extern c("neiv_shell_open_external") fn host_open_external(url: c_str): c_int;
 
 pub enum ShellError: i32 { invalid_url = 0, denied, unavailable }
 

@@ -1,11 +1,11 @@
-import { configure_window } from ceiv.lib;
-import { current } from ceiv.window;
-import { SurfaceId, capabilities, create_color, set_color_level, set_accessibility_label, set_visible, set_suspended, is_alive, destroy } from ceiv.surface;
+import { configure_window } from neiv.lib;
+import { current } from neiv.window;
+import { SurfaceId, capabilities, create_color, set_color_level, set_accessibility_label, set_visible, set_suspended, is_alive, destroy } from neiv.surface;
 
 var active: ?SurfaceId = none;
 
-export c("ceiv_app_configure") fn configure(): void {
-    const configured = configure_window("Ceiv Metal", 640, 480);
+export c("neiv_app_configure") fn configure(): void {
+    const configured = configure_window("Neiv Metal", 640, 480);
 }
 
 export c("metal_show") fn show(): c_int {

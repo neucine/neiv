@@ -1,10 +1,10 @@
 import std.json;
-import { with_c_string, with_c_string_and_id } from ceiv.buffer;
+import { with_c_string, with_c_string_and_id } from neiv.buffer;
 
-extern c("ceiv_menu_set_application") fn host_set_application(tree_json: *const c_char): c_int;
-extern c("ceiv_menu_register_context") fn host_register_context(id: c_str, tree_json: *const c_char): c_int;
-extern c("ceiv_menu_set_state") fn host_set_state(action_id: c_str, enabled: c_int, checked: c_int, visible: c_int): c_int;
-extern c("ceiv_menu_on_action") fn host_on_action(callback: c fn(c_str, c_str, c_long, c_str): c_int): void;
+extern c("neiv_menu_set_application") fn host_set_application(tree_json: *const c_char): c_int;
+extern c("neiv_menu_register_context") fn host_register_context(id: c_str, tree_json: *const c_char): c_int;
+extern c("neiv_menu_set_state") fn host_set_state(action_id: c_str, enabled: c_int, checked: c_int, visible: c_int): c_int;
+extern c("neiv_menu_on_action") fn host_on_action(callback: c fn(c_str, c_str, c_long, c_str): c_int): void;
 
 pub struct Action {
     pub id: string;
@@ -89,7 +89,7 @@ fn encode_nodes(nodes: []const Node): json.Value {
     return .array(array);
 }
 
-// Register a native menu tree during ceiv_app_configure.
+// Register a native menu tree during neiv_app_configure.
 pub fn set_application(nodes: []const Node): bool {
     const value = encode_nodes(nodes);
     return with_c_string(json.encode(&value), host_set_application);

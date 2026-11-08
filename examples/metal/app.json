@@ -1,6 +1,6 @@
 {
-  "id": "dev.neucine.ceiv.metal",
-  "name": "Ceiv Metal",
+  "id": "dev.neucine.neiv.metal",
+  "name": "Neiv Metal",
   "entry": "index.html",
   "nativePlugin": "CynaColorPlugin",
   "capabilities": []

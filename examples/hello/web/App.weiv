@@ -1,6 +1,6 @@
 <template>
   <main>
-    <p class="eyebrow">Ceiv ordinary app</p>
+    <p class="eyebrow">Neiv ordinary app</p>
     <h1>Hello from Cyna</h1>
     <p>This is a second app using the shared Mac host and a Weiv page.</p>
     <div class="value">{{ value }}</div>
@@ -29,9 +29,9 @@
 </template>
 <script lang="ts">
   import { doubleValue, slowDouble, scoreText, sizePayload, openWindow, renameCurrent, closeCurrent, publishUpdate as publishNativeUpdate, showNativeLabel as setNativeLabel, surfaceLifecycle, fileDialogStatus } from "./generated/commands.ts";
-  import { createActionContext, popupContextMenu, dialogs, shell, clipboard, tray, notifications, setCloseHandler } from "ceiv/sdk";
+  import { createActionContext, popupContextMenu, dialogs, shell, clipboard, tray, notifications, setCloseHandler } from "neiv/sdk";
   import { events } from "./generated/events.ts";
-  import { attachNativeSlot } from "ceiv/slots";
+  import { attachNativeSlot } from "neiv/slots";
   let value = 2;
   let name = "Cyna";
   let status = "Ready";
@@ -66,7 +66,7 @@
     catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
   }
   async function confirmWithNative() {
-    try { const accepted = await dialogs.confirm("Continue with Ceiv?"); weivUpdate(() => { status = accepted ? "Confirmed" : "Cancelled"; }); }
+    try { const accepted = await dialogs.confirm("Continue with Neiv?"); weivUpdate(() => { status = accepted ? "Confirmed" : "Cancelled"; }); }
     catch (error) { weivUpdate(() => { status = (error as Error).message; }); }
   }
   async function showNativeLabel() {
@@ -88,8 +88,8 @@
     let denied = 0;
     try { await shell.openExternal("https://example.com"); } catch { denied++; }
     try { await clipboard.readText(); } catch { denied++; }
-    try { await tray.setTitle("Ceiv"); } catch { denied++; }
-    try { await notifications.show("Ceiv", "Hello"); } catch { denied++; }
+    try { await tray.setTitle("Neiv"); } catch { denied++; }
+    try { await notifications.show("Neiv", "Hello"); } catch { denied++; }
     weivUpdate(() => { status = denied === 4 ? "Desktop services denied" : "Desktop service policy failed"; });
   }
   async function slowDoubleCount() {

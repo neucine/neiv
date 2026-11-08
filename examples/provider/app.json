@@ -1,6 +1,6 @@
 {
-  "id": "dev.neucine.ceiv.provider",
-  "name": "Ceiv Provider",
+  "id": "dev.neucine.neiv.provider",
+  "name": "Neiv Provider",
   "entry": "index.html",
   "nativePlugin": "CynaDemoPlugin",
   "nativeSources": ["native/demo_plugin.m"],

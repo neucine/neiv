@@ -12,19 +12,19 @@ globalThis.window = {
   addEventListener(name, handler) { listeners.set(name, handler); },
 };
 const generated = dirname(process.argv[2]);
-const fixture = mkdtempSync(join(dirname(new URL(import.meta.url).pathname), "../packages/ceiv/.bridge-test-"));
+const fixture = mkdtempSync(join(dirname(new URL(import.meta.url).pathname), "../packages/neiv/.bridge-test-"));
 process.on("exit", () => rmSync(fixture, { recursive: true, force: true }));
 for (const name of ["commands", "events"]) {
   const source = readFileSync(join(generated, `${name}.js`), "utf8")
-    .replaceAll('"/__weiv_packages/ceiv/sdk.js"', '"ceiv/sdk"')
-    .replaceAll('"/__weiv_packages/ceiv/sdk"', '"ceiv/sdk"');
+    .replaceAll('"/__weiv_packages/neiv/sdk.js"', '"neiv/sdk"')
+    .replaceAll('"/__weiv_packages/neiv/sdk"', '"neiv/sdk"');
   writeFileSync(join(fixture, `${name}.js`), source);
 }
 const { doubleValue, scoreText, sizePayload, labelText, halfValue, invert, summary } =
   await import(pathToFileURL(join(fixture, "commands.js")).href);
 const { CynaError, currentWindow, setCloseHandler, createActionContext,
   popupContextMenu, dialogs, shell, clipboard } =
-  await import(pathToFileURL(join(dirname(new URL(import.meta.url).pathname), "../packages/ceiv/dist/sdk.js")).href);
+  await import(pathToFileURL(join(dirname(new URL(import.meta.url).pathname), "../packages/neiv/dist/sdk.js")).href);
 const { events } = await import(pathToFileURL(join(fixture, "events.js")).href);
 const beforeHandshake = doubleValue(3);
 assert.deepEqual(messages, [{ kind: "hello" }]);
@@ -157,34 +157,34 @@ assert.deepEqual(messages.at(-1).states, {});
 const popup = popupContextMenu("demo.context", { element });
 await Promise.resolve();
 const popupRequest = messages.at(-1);
-assert.equal(popupRequest.command, "__ceiv.context.popup");
+assert.equal(popupRequest.command, "__neiv.context.popup");
 window.cynaReply({ id: popupRequest.id, ok: true, value: "demo.action" });
 assert.equal(await popup, "demo.action");
 const confirm = dialogs.confirm("Continue?");
 await Promise.resolve();
 const dialogRequest = messages.at(-1);
-assert.equal(dialogRequest.command, "__ceiv.dialog.confirm");
+assert.equal(dialogRequest.command, "__neiv.dialog.confirm");
 window.cynaReply({ id: dialogRequest.id, ok: true, value: true });
 assert.equal(await confirm, true);
 const files = dialogs.openFiles({ title: "Documents", extensions: ["txt"], multiple: true });
 await Promise.resolve();
 const filesRequest = messages.at(-1);
-assert.equal(filesRequest.command, "__ceiv.dialog.openFiles");
+assert.equal(filesRequest.command, "__neiv.dialog.openFiles");
 assert.deepEqual(filesRequest.args, { message: "Documents", extensions: ["txt"], multiple: true });
 window.cynaReply({ id: filesRequest.id, ok: false, error: { code: "CAPABILITY_DENIED", message: "Denied" } });
 await assert.rejects(files, error => error.code === "CAPABILITY_DENIED");
 const external = shell.openExternal("https://example.com");
 await Promise.resolve();
 const externalRequest = messages.at(-1);
-assert.equal(externalRequest.command, "__ceiv.shell.openExternal");
+assert.equal(externalRequest.command, "__neiv.shell.openExternal");
 window.cynaReply({ id: externalRequest.id, ok: false, error: { code: "CAPABILITY_DENIED", message: "Denied" } });
 await assert.rejects(external, error => error.code === "CAPABILITY_DENIED");
 const copied = clipboard.readText();
 await Promise.resolve();
 const clipboardRequest = messages.at(-1);
-assert.equal(clipboardRequest.command, "__ceiv.clipboard.readText");
-window.cynaReply({ id: clipboardRequest.id, ok: true, value: "Ceiv" });
-assert.equal(await copied, "Ceiv");
+assert.equal(clipboardRequest.command, "__neiv.clipboard.readText");
+window.cynaReply({ id: clipboardRequest.id, ok: true, value: "Neiv" });
+assert.equal(await copied, "Neiv");
 let closeCalls = 0;
 const removeCloseHandler = setCloseHandler(async () => { closeCalls++; return closeCalls > 1; });
 assert.equal(messages.at(-1).kind, "close-handler");

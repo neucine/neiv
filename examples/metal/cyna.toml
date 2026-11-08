@@ -1,11 +1,11 @@
-name = "ceiv_metal"
+name = "neiv_metal"
 version = "0.1.3"
 src = "src"
 type = "staticlib"
 entry = "src/lib.cy"
 
 [dependencies]
-ceiv = { version = "0.1.3" }
+neiv = { version = "0.1.3" }
 
 [build]
 target = "native"

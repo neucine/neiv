@@ -1,10 +1,10 @@
 // Private adapter for bounded host output buffers on Cyna 0.4.1.
 extern c("malloc") fn malloc(size: c_size_t): *c_void;
 extern c("free") fn free(ptr: *c_void): void;
-extern c("ceiv_window_open_options") fn host_open_options(title: *const c_char, width: c_int, height: c_int, min_width: c_int, min_height: c_int, visible: c_int): c_long;
-extern c("ceiv_window_get_state") fn host_window_state(handle: c_long, values: *c_int): c_int;
-extern c("ceiv_surface_get_metrics") fn host_surface_metrics(handle: c_long, values: *c_double): c_int;
-extern c("ceiv_surface_get_capabilities") fn host_surface_capabilities(window: c_long, kind: c_str, values: *c_int): c_int;
+extern c("neiv_window_open_options") fn host_open_options(title: *const c_char, width: c_int, height: c_int, min_width: c_int, min_height: c_int, visible: c_int): c_long;
+extern c("neiv_window_get_state") fn host_window_state(handle: c_long, values: *c_int): c_int;
+extern c("neiv_surface_get_metrics") fn host_surface_metrics(handle: c_long, values: *c_double): c_int;
+extern c("neiv_surface_get_capabilities") fn host_surface_capabilities(window: c_long, kind: c_str, values: *c_int): c_int;
 
 pub fn surface_capability_values(window: c_long, kind: c_str): [8]c_int {
     const raw = malloc(28);

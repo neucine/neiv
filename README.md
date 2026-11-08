@@ -1,18 +1,16 @@
-# Ceiv macOS app framework
+# Neiv macOS app framework
 
-Ceiv hosts a Cyna app in an ordinary macOS window with a bundled Weiv page.
+Neiv hosts a Cyna app in an ordinary macOS window with a bundled Weiv page.
 The reusable host owns AppKit, WKWebView, windows, the private asset scheme, and
 the command bridge. App code supplies a manifest, Cyna exports, and a Weiv
 page. The ordinary app links no video or renderer module.
 The video proof in `examples/proof` uses the same host with an optional private
 AVFoundation plugin. `examples/metal` uses an optional Metal color provider
 through the emerging public `SurfaceId` API; the full M2 lifecycle gate is open.
-[Native slot foundation](docs/native-slots.md) describes the shared placement
-and lifecycle boundary now used by that plugin.
 
 ## Repository layout
 
-`src/` and `cyna.toml` are the Cyna library. `packages/ceiv/` is the publishable npm SDK: TypeScript source in `src/`, CLI, build adapter, and the native host that standalone apps compile. `tests/` contains the development gates and host fixtures; `examples/` contains independent apps.
+`src/` and `cyna.toml` are the Cyna library. `packages/neiv/` is the publishable npm SDK: TypeScript source in `src/`, CLI, build adapter, and the native host that standalone apps compile. `tests/` contains the development gates and host fixtures; `examples/` contains independent apps.
 
 ## Requirements
 
@@ -22,12 +20,12 @@ verified against Weiv commit `05c5024`.
 ## Start an app
 
 ```sh
-node packages/ceiv/bin/ceiv.mjs new ../my-app --id dev.example.my-app
-node packages/ceiv/bin/ceiv.mjs check ../my-app
-node packages/ceiv/bin/ceiv.mjs run ../my-app
+node packages/neiv/bin/neiv.mjs new ../my-app --id dev.example.my-app
+node packages/neiv/bin/neiv.mjs check ../my-app
+node packages/neiv/bin/neiv.mjs run ../my-app
 ```
 
-To build the optional Metal sample, run `node packages/ceiv/bin/ceiv.mjs build examples/metal`.
+To build the optional Metal sample, run `node packages/neiv/bin/neiv.mjs build examples/metal`.
 Its manifest selects `CynaColorPlugin`; an ordinary app leaves `nativePlugin`
 unset and does not link Metal.
 `examples/provider` shows an app supplied native view: its manifest names the
@@ -37,13 +35,13 @@ Each [example](examples/README.md) is structured as a standalone app project.
 `build` assembles the `.app` without opening it. `run` builds and opens a new
 instance. `check` validates the manifest, generated bindings, and Cyna source.
 `package` builds a ZIP. For a signed Developer ID release, run
-`ceiv package <directory> --sign "Developer ID Application: ..."`.
+`neiv package <directory> --sign "Developer ID Application: ..."`.
 Add `--notarize-profile <keychain-profile>` to submit the signed ZIP with
 `notarytool`, staple the ticket to the app, validate it, and recreate the ZIP.
 The profile must already be configured with Apple's tools. `--sign -` makes an
 ad hoc signed local test package; it cannot be notarized. The unsigned and ad
 hoc paths are development artifacts, not validated release builds.
-The CLI is also exposed as the `ceiv` binary when this package is installed
+The CLI is also exposed as the `neiv` binary when this package is installed
 or linked with npm. [The public API](docs/api.md) describes its commands and
 the Cyna and TypeScript interfaces. The existing shell scripts remain available
 for the original proof and internal checks.
@@ -62,27 +60,27 @@ Set `KEEP_M1_OUTPUT=1` to retain the temporary bundles for a packaged UI
 smoke check. Generated files are checked with:
 
 ```sh
-node packages/ceiv/scripts/generate-commands.mjs --check examples/proof
-node packages/ceiv/scripts/generate-commands.mjs --check examples/hello
+node packages/neiv/scripts/generate-commands.mjs --check examples/proof
+node packages/neiv/scripts/generate-commands.mjs --check examples/hello
 ```
 
 ## App files
 
-`ceiv new` creates the app files. Edit:
+`neiv new` creates the app files. Edit:
 
 - `app.json`: unique reverse-domain `id`, display `name`, `entry`, and
   requested `capabilities`. The build also copies declared resources.
 - `cyna.toml` and `src/lib.cy`: Cyna static library and its exported C ABI
   functions. Each `export c("symbol") fn` becomes a generated TypeScript
   function. No AppKit or WebKit type is needed in Cyna code.
-  The `ceiv_app_configure` startup export calls `configure_window(title,
+  The `neiv_app_configure` startup export calls `configure_window(title,
   width, height)` to set the initial window before launch.
 - `web/App.weiv`: page and calls to app exports in
-  `web/generated/commands.ts`, with framework APIs in `ceiv/sdk`.
+  `web/generated/commands.ts`, with framework APIs in `neiv/sdk`.
   The build generates matching `.d.ts` files for app commands and events.
   Framework declarations come from the npm package.
 
-Then run `node packages/ceiv/bin/ceiv.mjs build /absolute/path/to/new-app`. The CLI validates the
+Then run `node packages/neiv/bin/neiv.mjs build /absolute/path/to/new-app`. The CLI validates the
 manifest, generates bindings, compiles Weiv and Cyna, links the Mac host, and
 assembles the `.app`. It does not require edits to host source. The second app
 uses different identity, title, assets, and commands from the video proof.
@@ -97,11 +95,11 @@ c_int` becomes `doubleValue(value: number): Promise<number>`. Rebuilding after
 an export signature change updates the generated client. The current scanner
 requires the `export c("symbol") fn` signature on one line; other export
 spellings and unsupported ABI types fail the build. A
-`// @ceiv {"name":"math.double"}` comment immediately
+`// @neiv {"name":"math.double"}` comment immediately
 before an export can set a stable wire name; `binding` can override the generated
 TypeScript name.
 
-Optional `@ceiv` argument and return descriptors supply semantics that a C
+Optional `@neiv` argument and return descriptors supply semantics that a C
 signature cannot encode, such as a boolean carried in `c_int`, JSON records
 carried in `c_str`, or a caller-owned output buffer. Descriptors support `int32`
 with optional `min`/`max`, finite `number`
@@ -119,7 +117,7 @@ string or composite return uses a caller-owned `char *` output buffer and an
 `int` byte count; return `-1` on failure. See the exported functions in
 `examples/hello/src/lib.cy`. The buffer is valid only for that call.
 The public Cyna modules cover app identity, windows, menus, dialogs, events,
-and text slots. [GUI API plan](docs/gui-api-plan.md) records the boundary.
+and text slots. See [the API guide](docs/api.md) for their use.
 
 Generated functions return promises. They accept an optional final
 `{ signal, deadlineMs }` argument. A deadline defaults to 10 seconds and is
@@ -163,12 +161,11 @@ belongs to M3.
 
 `sh build.sh` packages `examples/proof`, the counter and ten-second sample video.
 The example has its own `app.json`, `package.json`, Cyna project, Weiv page,
-and media asset. It declares released Ceiv versions without paths back into
-this repository. Once `ceiv@0.1.2` is available in the configured npm
+and media asset. It declares released Neiv versions without paths back into
+this repository. Once `neiv@0.1.2` is available in the configured npm
 registry, it can be copied outside
 this checkout and built with `npm install && npm run build`.
 The page owns
 controls and timeline state; the optional AVFoundation plugin owns the native
 video layer and playback. The proof reports seek completion and decoded-frame
-availability, not display scanout. See `docs/architecture.md` and
-`docs/mac-feature-plan.md` for the optional surface and release plans.
+availability, not display scanout.

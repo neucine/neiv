@@ -1,6 +1,6 @@
 {
-  "id": "dev.neucine.ceiv.hello",
-  "name": "Ceiv Hello",
+  "id": "dev.neucine.neiv.hello",
+  "name": "Neiv Hello",
   "entry": "index.html",
   "capabilities": []
 }

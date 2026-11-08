@@ -1,10 +1,10 @@
-import { read } from ceiv.buffer;
-extern c("ceiv_app_quit") fn host_quit(): void;
-extern c("ceiv_app_set_quit_on_last_window") fn host_set_quit_on_last_window(enabled: c_int): void;
-extern c("ceiv_app_current") fn host_current(): c_int;
-extern c("ceiv_app_id") fn host_id(out: *c_char, capacity: c_int): c_int;
-extern c("ceiv_app_name") fn host_name(out: *c_char, capacity: c_int): c_int;
-extern c("ceiv_app_on_lifecycle") fn host_on_lifecycle(callback: c fn(c_str): void): void;
+import { read } from neiv.buffer;
+extern c("neiv_app_quit") fn host_quit(): void;
+extern c("neiv_app_set_quit_on_last_window") fn host_set_quit_on_last_window(enabled: c_int): void;
+extern c("neiv_app_current") fn host_current(): c_int;
+extern c("neiv_app_id") fn host_id(out: *c_char, capacity: c_int): c_int;
+extern c("neiv_app_name") fn host_name(out: *c_char, capacity: c_int): c_int;
+extern c("neiv_app_on_lifecycle") fn host_on_lifecycle(callback: c fn(c_str): void): void;
 
 pub struct App { value: c_int; }
 

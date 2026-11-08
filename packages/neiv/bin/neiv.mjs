@@ -7,7 +7,7 @@ import { spawn, spawnSync } from "node:child_process";
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const command = process.argv[2];
 const args = process.argv.slice(3);
-const usage = "Usage: ceiv new <directory> [--id dev.example.app] | build [directory] | run [directory] | check [directory] | dev [directory] | package [directory] [--sign identity] [--notarize-profile profile]";
+const usage = "Usage: neiv new <directory> [--id dev.example.app] | build [directory] | run [directory] | check [directory] | dev [directory] | package [directory] [--sign identity] [--notarize-profile profile]";
 function run(program, parameters, cwd) {
   const result = spawnSync(program, parameters, { cwd, stdio: "inherit", env: process.env });
   if (result.error) throw result.error;
@@ -31,8 +31,8 @@ function packageOptions(values) {
 }
 function packageApp(root, sign, profile) {
   run("sh", [join(repo, "app-build.sh"), root]);
-  const bundle = join(root, "build/CeivApp.app");
-  const archive = join(root, "build/CeivApp.zip");
+  const bundle = join(root, "build/NeivApp.app");
+  const archive = join(root, "build/NeivApp.zip");
   if (sign) {
     const parameters = ["--force", "--options", "runtime"];
     if (sign !== "-") parameters.push("--timestamp");
@@ -41,7 +41,7 @@ function packageApp(root, sign, profile) {
   }
   const archiveApp = () => {
     rmSync(archive, { force: true });
-    run("ditto", ["-c", "-k", "--sequesterRsrc", "--keepParent", "CeivApp.app", "CeivApp.zip"], join(root, "build"));
+    run("ditto", ["-c", "-k", "--sequesterRsrc", "--keepParent", "NeivApp.app", "NeivApp.zip"], join(root, "build"));
   };
   archiveApp();
   if (profile) {
@@ -58,17 +58,17 @@ function dev(root) {
   const build = () => {
     if (building) { queued = true; return; }
     building = true;
-    console.log(`Ceiv rebuilding ${root}`);
+    console.log(`Neiv rebuilding ${root}`);
     const task = spawn("sh", [join(repo, "app-build.sh"), root], { stdio: "inherit" });
-    task.on("error", error => { console.error(`ceiv dev: ${error.message}`); building = false; });
+    task.on("error", error => { console.error(`neiv dev: ${error.message}`); building = false; });
     task.on("exit", code => {
       building = false;
       if (code === 0) {
         if (appProcess) appProcess.kill("SIGTERM");
-        appProcess = spawn(join(root, "build/CeivApp.app/Contents/MacOS/CeivApp"), [], { stdio: "inherit" });
-        appProcess.on("error", error => console.error(`ceiv dev: ${error.message}`));
-        console.log("Ceiv app restarted");
-      } else console.error(`Ceiv build failed (${code}); watching for changes`);
+        appProcess = spawn(join(root, "build/NeivApp.app/Contents/MacOS/NeivApp"), [], { stdio: "inherit" });
+        appProcess.on("error", error => console.error(`neiv dev: ${error.message}`));
+        console.log("Neiv app restarted");
+      } else console.error(`Neiv build failed (${code}); watching for changes`);
       if (queued) { queued = false; build(); }
     });
   };
@@ -106,8 +106,8 @@ function create() {
     id, name: title, entry: "index.html", capabilities: [],
   }, null, 2) + "\n");
   writeFileSync(join(root, ".gitignore"), "/build/\n/web/generated/\n/native/generated/\n/cyna.lock\n");
-  writeFileSync(join(root, "cyna.toml"), `name = "${packageName}"\nversion = "0.1.2"\nsrc = "src"\ntype = "staticlib"\nentry = "src/lib.cy"\n\n[dependencies]\nceiv = { version = "0.1.3" }\n\n[build]\ntarget = "native"\nopt = "release"\n`);
-  writeFileSync(join(root, "src/lib.cy"), `import { configure_window } from ceiv.lib;\n\nexport c("ceiv_app_configure") fn configure(): void {\n    const configured = configure_window(${JSON.stringify(title)}, 720, 480);\n}\n\nexport c("${packageName}_increment") fn increment(value: c_int): c_int {\n    return value + 1;\n}\n`);
+  writeFileSync(join(root, "cyna.toml"), `name = "${packageName}"\nversion = "0.1.2"\nsrc = "src"\ntype = "staticlib"\nentry = "src/lib.cy"\n\n[dependencies]\nneiv = { version = "0.1.3" }\n\n[build]\ntarget = "native"\nopt = "release"\n`);
+  writeFileSync(join(root, "src/lib.cy"), `import { configure_window } from neiv.lib;\n\nexport c("neiv_app_configure") fn configure(): void {\n    const configured = configure_window(${JSON.stringify(title)}, 720, 480);\n}\n\nexport c("${packageName}_increment") fn increment(value: c_int): c_int {\n    return value + 1;\n}\n`);
   writeFileSync(join(root, "web/App.weiv"), `<template>\n  <main>\n    <h1>${title}</h1>\n    <p>{{ count }}</p>\n    <button @click="increase">Increment with Cyna</button>\n    <p role="status">{{ status }}</p>\n  </main>\n</template>\n<script lang="ts">\n  import { increment } from "./generated/commands.ts";\n  let count = 0;\n  let status = "Ready";\n  async function increase() {\n    try {\n      const next = await increment(count);\n      weivUpdate(() => { count = next; status = "Cyna returned " + next; });\n    } catch (error) {\n      weivUpdate(() => { status = (error as Error).message; });\n    }\n  }\n</script>\n<style>\n  body { font: 18px -apple-system, sans-serif; }\n  main { max-width: 48rem; margin: 4rem auto; }\n</style>\n`);
   run(process.execPath, [join(repo, "scripts/generate-commands.mjs"), root]);
   run(process.execPath, [join(repo, "scripts/generate-callbacks.mjs"), root]);
@@ -131,15 +131,15 @@ try {
       run(process.execPath, [join(repo, "scripts/prepare-cyna.mjs"), root]);
       run("cyna", ["install", "build/cyna.toml"], root);
       run("cyna", ["check", "build/cyna.toml"], root);
-      console.log(`Ceiv check passed: ${root}`);
+      console.log(`Neiv check passed: ${root}`);
     } else {
       run("sh", [join(repo, "app-build.sh"), root]);
-      if (command === "run") run("open", ["-n", join(root, "build/CeivApp.app")]);
+      if (command === "run") run("open", ["-n", join(root, "build/NeivApp.app")]);
     }
   } else {
     throw new Error(usage);
   }
 } catch (error) {
-  console.error(`ceiv: ${error.message}`);
+  console.error(`neiv: ${error.message}`);
   process.exitCode = 1;
 }

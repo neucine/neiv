@@ -1,5 +1,5 @@
-extern c("ceiv_tray_set_title") fn host_set_title(title: c_str): c_int;
-extern c("ceiv_tray_clear") fn host_clear(): c_int;
+extern c("neiv_tray_set_title") fn host_set_title(title: c_str): c_int;
+extern c("neiv_tray_clear") fn host_clear(): c_int;
 
 pub enum TrayError: i32 { denied = 0, invalid_title }
 

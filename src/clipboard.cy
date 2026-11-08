@@ -1,7 +1,7 @@
-import { read } from ceiv.buffer;
-extern c("ceiv_clipboard_read_text") fn host_read(out: *c_char, capacity: c_int): c_int;
-extern c("ceiv_clipboard_write_text") fn host_write(text: c_str): c_int;
-extern c("ceiv_clipboard_capability") fn host_capability(read: c_int): c_int;
+import { read } from neiv.buffer;
+extern c("neiv_clipboard_read_text") fn host_read(out: *c_char, capacity: c_int): c_int;
+extern c("neiv_clipboard_write_text") fn host_write(text: c_str): c_int;
+extern c("neiv_clipboard_capability") fn host_capability(read: c_int): c_int;
 
 pub enum ClipboardError: i32 { denied = 0, invalid_text, unavailable }
 

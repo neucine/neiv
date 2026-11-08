@@ -1,5 +1,5 @@
 // Generated from Cyna command exports. Do not edit.
-import type { InvokeOptions } from "ceiv/sdk";
+import type { InvokeOptions } from "neiv/sdk";
 export declare function videoShow(options?: InvokeOptions): Promise<number>;
 export declare function videoDetach(options?: InvokeOptions): Promise<number>;
 export declare function videoAttach(options?: InvokeOptions): Promise<number>;

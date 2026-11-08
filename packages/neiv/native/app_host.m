@@ -20,7 +20,7 @@ static NSArray<NSString *> *appCapabilities;
 static NSStatusItem *statusItem;
 static NSDictionary *appManifest;
 static void (*lifecycleCallback)(const char *);
-void ceiv_app_on_lifecycle(void (*callback)(const char *)) { lifecycleCallback = callback; }
+void neiv_app_on_lifecycle(void (*callback)(const char *)) { lifecycleCallback = callback; }
 @class CynaAppHost;
 static __weak CynaAppHost *runningHost;
 static void refreshHostMenu(void);
@@ -28,9 +28,9 @@ static NSArray *applicationMenuTree;
 static NSSet<NSString *> *applicationActionIds;
 static NSMutableDictionary<NSString *, NSDictionary *> *backendActionStates;
 static int (*backendActionCallback)(const char *, const char *, long long, const char *);
-void ceiv_menu_on_action(int (*callback)(const char *, const char *, long long, const char *)) { backendActionCallback = callback; }
+void neiv_menu_on_action(int (*callback)(const char *, const char *, long long, const char *)) { backendActionCallback = callback; }
 static void onMain(void (^operation)(void));
-void ceiv_app_set_quit_on_last_window(int enabled) { quitOnLastWindow = enabled != 0; }
+void neiv_app_set_quit_on_last_window(int enabled) { quitOnLastWindow = enabled != 0; }
 static void refreshHostMenu(void);
 static NSMutableDictionary<NSString *, NSArray *> *contextMenuTrees;
 static BOOL menuTreeValid(NSArray *tree, NSMutableSet *ids, NSMutableSet *actionIds, NSMutableSet *shortcuts, NSUInteger depth) {
@@ -79,7 +79,7 @@ static BOOL menuTreeValid(NSArray *tree, NSMutableSet *ids, NSMutableSet *action
     }
     return YES;
 }
-int ceiv_menu_set_application(const char *treeJson) {
+int neiv_menu_set_application(const char *treeJson) {
     if (!treeJson || strlen(treeJson) > 65536) return -1;
     NSString *text = [NSString stringWithUTF8String:treeJson];
     NSData *data = [text dataUsingEncoding:NSUTF8StringEncoding];
@@ -92,7 +92,7 @@ int ceiv_menu_set_application(const char *treeJson) {
     backendActionStates = [NSMutableDictionary new];
     return 0;
 }
-int ceiv_menu_set_state(const char *actionId, int enabled, int checked, int visible) {
+int neiv_menu_set_state(const char *actionId, int enabled, int checked, int visible) {
     if (!actionId) return -1;
     NSString *identifier = [NSString stringWithUTF8String:actionId];
     if (![applicationActionIds containsObject:identifier]) return -1;
@@ -102,7 +102,7 @@ int ceiv_menu_set_state(const char *actionId, int enabled, int checked, int visi
     });
     return 0;
 }
-int ceiv_menu_register_context(const char *identifier, const char *treeJson) {
+int neiv_menu_register_context(const char *identifier, const char *treeJson) {
     if (!identifier || !treeJson || strlen(identifier) > 100 || strlen(treeJson) > 65536) return -1;
     NSString *name = [NSString stringWithUTF8String:identifier];
     NSString *text = [NSString stringWithUTF8String:treeJson];
@@ -158,7 +158,7 @@ static void applyMenuStates(NSMenu *menu, NSDictionary *states) {
     return menu;
 }
 @end
-int ceiv_set_initial_window(const char *title, int width, int height) {
+int neiv_set_initial_window(const char *title, int width, int height) {
     if (!title || width < 320 || width > 3000 || height < 240 || height > 2000) return -1;
     NSString *name = [NSString stringWithUTF8String:title];
     if (!name || !name.length || name.length > 80) return -1;
@@ -502,7 +502,7 @@ int ceiv_set_initial_window(const char *title, int width, int height) {
         NSString *actionRequestId = [body[@"requestId"] isKindOfClass:NSString.class] ? body[@"requestId"] : nil;
         if (actionRequestId && [self.pendingActions containsObject:actionRequestId]) {
             [self.pendingActions removeObject:actionRequestId];
-            if (![body[@"ok"] isEqual:@YES]) NSLog(@"Ceiv action %@ failed in window %lld", actionRequestId, self.handle);
+            if (![body[@"ok"] isEqual:@YES]) NSLog(@"Neiv action %@ failed in window %lld", actionRequestId, self.handle);
         }
         return;
     }
@@ -516,7 +516,7 @@ int ceiv_set_initial_window(const char *title, int width, int height) {
         refreshHostMenu();
         return;
     }
-    if ([kind isEqualToString:@"invoke"] && [body[@"command"] isEqualToString:@"__ceiv.context.popup"]) {
+    if ([kind isEqualToString:@"invoke"] && [body[@"command"] isEqualToString:@"__neiv.context.popup"]) {
         NSDictionary *args = [body[@"args"] isKindOfClass:NSDictionary.class] ? body[@"args"] : nil;
         NSString *menuId = [args[@"menuId"] isKindOfClass:NSString.class] ? args[@"menuId"] : nil;
         NSNumber *x = [args[@"x"] isKindOfClass:NSNumber.class] ? args[@"x"] : nil;
@@ -541,42 +541,42 @@ int ceiv_set_initial_window(const char *title, int width, int height) {
         return;
     }
     if ([kind isEqualToString:@"invoke"] && [body[@"command"] isKindOfClass:NSString.class] &&
-        ([body[@"command"] hasPrefix:@"__ceiv.shell."] || [body[@"command"] hasPrefix:@"__ceiv.clipboard."] ||
-         [body[@"command"] hasPrefix:@"__ceiv.tray."] || [body[@"command"] hasPrefix:@"__ceiv.notification."])) {
+        ([body[@"command"] hasPrefix:@"__neiv.shell."] || [body[@"command"] hasPrefix:@"__neiv.clipboard."] ||
+         [body[@"command"] hasPrefix:@"__neiv.tray."] || [body[@"command"] hasPrefix:@"__neiv.notification."])) {
         NSString *command = body[@"command"];
         NSDictionary *args = [body[@"args"] isKindOfClass:NSDictionary.class] ? body[@"args"] : @{};
         id value = nil;
         NSString *errorCode = nil;
-        if ([command isEqualToString:@"__ceiv.shell.openExternal"]) {
+        if ([command isEqualToString:@"__neiv.shell.openExternal"]) {
             NSString *url = [args[@"url"] isKindOfClass:NSString.class] ? args[@"url"] : nil;
-            int status = url ? ceiv_shell_open_external(url.UTF8String) : -1;
+            int status = url ? neiv_shell_open_external(url.UTF8String) : -1;
             if (status == 0) value = @YES;
             else errorCode = status == -2 ? @"CAPABILITY_DENIED" : status == -3 ? @"UNAVAILABLE" : @"INVALID_ARGUMENT";
-        } else if ([command isEqualToString:@"__ceiv.clipboard.readText"]) {
+        } else if ([command isEqualToString:@"__neiv.clipboard.readText"]) {
             if (![appCapabilities containsObject:@"clipboard.read"]) errorCode = @"CAPABILITY_DENIED";
             else {
                 NSString *text = [NSPasteboard.generalPasteboard stringForType:NSPasteboardTypeString];
                 if (text && [text lengthOfBytesUsingEncoding:NSUTF8StringEncoding] > 65535) errorCode = @"LIMIT_EXCEEDED";
                 else value = text ?: NSNull.null;
             }
-        } else if ([command isEqualToString:@"__ceiv.clipboard.writeText"]) {
+        } else if ([command isEqualToString:@"__neiv.clipboard.writeText"]) {
             NSString *text = [args[@"text"] isKindOfClass:NSString.class] ? args[@"text"] : nil;
-            int status = text ? ceiv_clipboard_write_text(text.UTF8String) : -1;
+            int status = text ? neiv_clipboard_write_text(text.UTF8String) : -1;
             if (status == 0) value = @YES;
             else errorCode = status == -2 ? @"CAPABILITY_DENIED" : status == -3 ? @"UNAVAILABLE" : @"INVALID_ARGUMENT";
-        } else if ([command isEqualToString:@"__ceiv.tray.setTitle"]) {
+        } else if ([command isEqualToString:@"__neiv.tray.setTitle"]) {
             NSString *title = [args[@"title"] isKindOfClass:NSString.class] ? args[@"title"] : nil;
-            int status = title ? ceiv_tray_set_title(title.UTF8String) : -1;
+            int status = title ? neiv_tray_set_title(title.UTF8String) : -1;
             if (status == 0) value = @YES;
             else errorCode = status == -2 ? @"CAPABILITY_DENIED" : @"INVALID_ARGUMENT";
-        } else if ([command isEqualToString:@"__ceiv.tray.clear"]) {
-            int status = ceiv_tray_clear();
+        } else if ([command isEqualToString:@"__neiv.tray.clear"]) {
+            int status = neiv_tray_clear();
             if (status == 0) value = @YES;
             else errorCode = @"CAPABILITY_DENIED";
-        } else if ([command isEqualToString:@"__ceiv.notification.show"]) {
+        } else if ([command isEqualToString:@"__neiv.notification.show"]) {
             NSString *title = [args[@"title"] isKindOfClass:NSString.class] ? args[@"title"] : nil;
             NSString *message = [args[@"body"] isKindOfClass:NSString.class] ? args[@"body"] : nil;
-            int status = title && message ? ceiv_notification_show(title.UTF8String, message.UTF8String) : -1;
+            int status = title && message ? neiv_notification_show(title.UTF8String, message.UTF8String) : -1;
             if (status == 0) value = @YES;
             else errorCode = status == -2 ? @"CAPABILITY_DENIED" : @"INVALID_ARGUMENT";
         } else errorCode = @"UNKNOWN_COMMAND";
@@ -586,7 +586,7 @@ int ceiv_set_initial_window(const char *title, int width, int height) {
         return;
     }
     if ([kind isEqualToString:@"invoke"] && [body[@"command"] isKindOfClass:NSString.class] &&
-        [body[@"command"] hasPrefix:@"__ceiv.dialog."]) {
+        [body[@"command"] hasPrefix:@"__neiv.dialog."]) {
         NSString *command = body[@"command"];
         NSDictionary *args = [body[@"args"] isKindOfClass:NSDictionary.class] ? body[@"args"] : @{};
         NSString *message = [args[@"message"] isKindOfClass:NSString.class] ? args[@"message"] : @"";
@@ -594,15 +594,15 @@ int ceiv_set_initial_window(const char *title, int width, int height) {
             [self sendBridgeReply:@{@"id":requestId,@"ok":@NO,@"error":@{@"code":@"INVALID_ARGUMENT",@"message":@"Dialog text too long"}}]; return;
         }
         id result = nil;
-        if ([command isEqualToString:@"__ceiv.dialog.alert"] || [command isEqualToString:@"__ceiv.dialog.confirm"]) {
+        if ([command isEqualToString:@"__neiv.dialog.alert"] || [command isEqualToString:@"__neiv.dialog.confirm"]) {
             NSAlert *alert = [NSAlert new]; alert.messageText = message.length ? message : @"Notice";
             [alert addButtonWithTitle:[command hasSuffix:@"confirm"] ? @"OK" : @"Close"];
             if ([command hasSuffix:@"confirm"]) [alert addButtonWithTitle:@"Cancel"];
             NSModalResponse response = [alert runModal];
             result = [command hasSuffix:@"confirm"] ? @((BOOL)(response == NSAlertFirstButtonReturn)) : @YES;
-        } else if ([command isEqualToString:@"__ceiv.dialog.openFile"] || [command isEqualToString:@"__ceiv.dialog.saveFile"] ||
-                   [command isEqualToString:@"__ceiv.dialog.openFiles"] || [command isEqualToString:@"__ceiv.dialog.saveFileWithOptions"]) {
-            BOOL opening = [command isEqualToString:@"__ceiv.dialog.openFile"] || [command isEqualToString:@"__ceiv.dialog.openFiles"];
+        } else if ([command isEqualToString:@"__neiv.dialog.openFile"] || [command isEqualToString:@"__neiv.dialog.saveFile"] ||
+                   [command isEqualToString:@"__neiv.dialog.openFiles"] || [command isEqualToString:@"__neiv.dialog.saveFileWithOptions"]) {
+            BOOL opening = [command isEqualToString:@"__neiv.dialog.openFile"] || [command isEqualToString:@"__neiv.dialog.openFiles"];
             NSString *capability = opening ? @"dialog.open" : @"dialog.save";
             if (![self.capabilities containsObject:capability]) {
                 [self sendBridgeReply:@{@"id":requestId,@"ok":@NO,@"error":@{@"code":@"CAPABILITY_DENIED",@"message":@"File dialog capability was not declared"}}]; return;
@@ -632,7 +632,7 @@ int ceiv_set_initial_window(const char *title, int width, int height) {
                 }
                 panel.allowedContentTypes = types;
             }
-            if ([command isEqualToString:@"__ceiv.dialog.openFiles"]) {
+            if ([command isEqualToString:@"__neiv.dialog.openFiles"]) {
                 NSOpenPanel *openPanel = (NSOpenPanel *)panel;
                 openPanel.allowsMultipleSelection = [args[@"multiple"] boolValue];
                 if ([openPanel runModal] == NSModalResponseOK) {
@@ -886,8 +886,8 @@ static void onMain(void (^operation)(void)) {
     if (NSThread.isMainThread) operation();
     else dispatch_sync(dispatch_get_main_queue(), operation);
 }
-void ceiv_app_quit(void) { onMain(^{ [NSApp terminate:nil]; }); }
-int ceiv_app_current(void) { return runningHost ? 1 : 0; }
+void neiv_app_quit(void) { onMain(^{ [NSApp terminate:nil]; }); }
+int neiv_app_current(void) { return runningHost ? 1 : 0; }
 static int copyAppText(NSString *text, char *out, int capacity) {
     if (!text || !out || capacity < 1) return -1;
     const char *bytes = text.UTF8String;
@@ -896,9 +896,9 @@ static int copyAppText(NSString *text, char *out, int capacity) {
     memcpy(out, bytes, count + 1);
     return (int)count;
 }
-int ceiv_app_id(char *out, int capacity) { return copyAppText(appManifest[@"id"], out, capacity); }
-int ceiv_app_name(char *out, int capacity) { return copyAppText(appManifest[@"name"], out, capacity); }
-long long ceiv_window_open_handle(const char *title, int width, int height) {
+int neiv_app_id(char *out, int capacity) { return copyAppText(appManifest[@"id"], out, capacity); }
+int neiv_app_name(char *out, int capacity) { return copyAppText(appManifest[@"name"], out, capacity); }
+long long neiv_window_open_handle(const char *title, int width, int height) {
     if (!title || ![NSString stringWithUTF8String:title] || width < 320 || width > 3000 ||
         height < 240 || height > 2000) return 0;
     __block long long handle = 0;
@@ -912,7 +912,7 @@ long long ceiv_window_open_handle(const char *title, int width, int height) {
     });
     return handle;
 }
-long long ceiv_window_open_options(const char *title, int width, int height,
+long long neiv_window_open_options(const char *title, int width, int height,
     int minWidth, int minHeight, int visible) {
     if (!title || ![NSString stringWithUTF8String:title] || width < 320 || width > 3000 ||
         height < 240 || height > 2000 || minWidth < 0 || minHeight < 0 ||
@@ -929,7 +929,7 @@ long long ceiv_window_open_options(const char *title, int width, int height,
     });
     return handle;
 }
-int ceiv_window_get_state(long long handle, int *values) {
+int neiv_window_get_state(long long handle, int *values) {
     if (!values) return -1;
     __block int status = -1;
     onMain(^{
@@ -945,7 +945,7 @@ int ceiv_window_get_state(long long handle, int *values) {
     });
     return status;
 }
-int ceiv_window_set_size(long long handle, int width, int height) {
+int neiv_window_set_size(long long handle, int width, int height) {
     if (width < 320 || width > 3000 || height < 240 || height > 2000) return -2;
     __block int status = -1;
     onMain(^{
@@ -956,7 +956,7 @@ int ceiv_window_set_size(long long handle, int width, int height) {
     });
     return status;
 }
-int ceiv_window_set_bounds(long long handle, int x, int y, int width, int height) {
+int neiv_window_set_bounds(long long handle, int x, int y, int width, int height) {
     if (width < 320 || width > 3000 || height < 240 || height > 2000 ||
         x < -100000 || x > 100000 || y < -100000 || y > 100000) return -2;
     __block int status = -1;
@@ -969,13 +969,13 @@ int ceiv_window_set_bounds(long long handle, int x, int y, int width, int height
     });
     return status;
 }
-long long ceiv_window_current_handle(void) { return currentWindowHandle; }
-int ceiv_window_focus_handle(long long handle) {
+long long neiv_window_current_handle(void) { return currentWindowHandle; }
+int neiv_window_focus_handle(long long handle) {
     __block int status = -1;
     onMain(^{ CynaWindow *window = [runningHost windowForHandle:handle]; if (window) { [window.window makeKeyAndOrderFront:nil]; status = 0; } });
     return status;
 }
-int ceiv_window_set_title_handle(long long handle, const char *title) {
+int neiv_window_set_title_handle(long long handle, const char *title) {
     if (!title) return -1;
     NSString *value = [NSString stringWithUTF8String:title];
     if (!value || !value.length || value.length > 80) return -1;
@@ -983,17 +983,17 @@ int ceiv_window_set_title_handle(long long handle, const char *title) {
     onMain(^{ CynaWindow *window = [runningHost windowForHandle:handle]; if (window) { window.window.title = value; status = 0; } });
     return status;
 }
-int ceiv_window_close_handle(long long handle) {
+int neiv_window_close_handle(long long handle) {
     __block int status = -1;
     onMain(^{ CynaWindow *window = [runningHost windowForHandle:handle]; if (window) { [window.window performClose:nil]; status = 0; } });
     return status;
 }
-int ceiv_window_reload_handle(long long handle) {
+int neiv_window_reload_handle(long long handle) {
     __block int status = -1;
     onMain(^{ CynaWindow *window = [runningHost windowForHandle:handle]; if (window) { [window.webview reload]; status = 0; } });
     return status;
 }
-int ceiv_publish_event(const char *topic, const char *payloadJson, long long targetHandle) {
+int neiv_publish_event(const char *topic, const char *payloadJson, long long targetHandle) {
     if (!topic || !payloadJson || strlen(payloadJson) > 65536) return -1;
     NSString *name = [NSString stringWithUTF8String:topic];
     NSString *json = [NSString stringWithUTF8String:payloadJson];
@@ -1017,20 +1017,20 @@ int ceiv_publish_event(const char *topic, const char *payloadJson, long long tar
     });
     return status;
 }
-int ceiv_dialog_alert(const char *message) {
+int neiv_dialog_alert(const char *message) {
     if (!message || strlen(message) > 2000) return -1;
     NSString *text = [NSString stringWithUTF8String:message]; if (!text) return -1;
     onMain(^{ NSAlert *alert = [NSAlert new]; alert.messageText = text; [alert addButtonWithTitle:@"Close"]; [alert runModal]; });
     return 0;
 }
-int ceiv_dialog_confirm(const char *message) {
+int neiv_dialog_confirm(const char *message) {
     if (!message || strlen(message) > 2000) return -1;
     NSString *text = [NSString stringWithUTF8String:message]; if (!text) return -1;
     __block int accepted = 0;
     onMain(^{ NSAlert *alert = [NSAlert new]; alert.messageText = text; [alert addButtonWithTitle:@"OK"]; [alert addButtonWithTitle:@"Cancel"]; accepted = [alert runModal] == NSAlertFirstButtonReturn; });
     return accepted;
 }
-int ceiv_dialog_capability(int save) {
+int neiv_dialog_capability(int save) {
     return [appCapabilities containsObject:save ? @"dialog.save" : @"dialog.open"] ? 1 : 0;
 }
 static int fileDialog(BOOL save, char *out, int capacity) {
@@ -1047,9 +1047,9 @@ static int fileDialog(BOOL save, char *out, int capacity) {
     });
     return count;
 }
-int ceiv_dialog_open_file(char *out, int capacity) { return fileDialog(NO, out, capacity); }
-int ceiv_dialog_save_file(char *out, int capacity) { return fileDialog(YES, out, capacity); }
-int ceiv_dialog_paths(const char *extensionsJson, int save, char *out, int capacity) {
+int neiv_dialog_open_file(char *out, int capacity) { return fileDialog(NO, out, capacity); }
+int neiv_dialog_save_file(char *out, int capacity) { return fileDialog(YES, out, capacity); }
+int neiv_dialog_paths(const char *extensionsJson, int save, char *out, int capacity) {
     if (![appCapabilities containsObject:save ? @"dialog.save" : @"dialog.open"]) return -2;
     if (!extensionsJson || !out || capacity < 1 || capacity > 65536 || strlen(extensionsJson) > 1024) return -3;
     NSData *input = [[NSString stringWithUTF8String:extensionsJson] dataUsingEncoding:NSUTF8StringEncoding];
@@ -1084,7 +1084,7 @@ int ceiv_dialog_paths(const char *extensionsJson, int save, char *out, int capac
     });
     return count;
 }
-int ceiv_slot_set_text(long long windowHandle, const char *slotId, const char *text) {
+int neiv_slot_set_text(long long windowHandle, const char *slotId, const char *text) {
     if (!slotId || !text || strlen(slotId) > 64 || strlen(text) > 4096) return -1;
     NSString *identifier = [NSString stringWithUTF8String:slotId];
     NSString *value = [NSString stringWithUTF8String:text];
@@ -1107,7 +1107,7 @@ int ceiv_slot_set_text(long long windowHandle, const char *slotId, const char *t
     });
     return status;
 }
-long long ceiv_surface_create_text(long long windowHandle, const char *slotId, const char *text) {
+long long neiv_surface_create_text(long long windowHandle, const char *slotId, const char *text) {
     if (!slotId || !text || strlen(slotId) > 64 || strlen(text) > 4096) return 0;
     NSString *identifier = [NSString stringWithUTF8String:slotId];
     NSString *value = [NSString stringWithUTF8String:text];
@@ -1128,7 +1128,7 @@ long long ceiv_surface_create_text(long long windowHandle, const char *slotId, c
     });
     return surface;
 }
-int ceiv_surface_set_text(long long surface, const char *text) {
+int neiv_surface_set_text(long long surface, const char *text) {
     if (surface < 1 || !text || strlen(text) > 4096) return -1;
     NSString *value = [NSString stringWithUTF8String:text];
     if (!value) return -1;
@@ -1143,7 +1143,7 @@ int ceiv_surface_set_text(long long surface, const char *text) {
     });
     return status;
 }
-int ceiv_surface_destroy(long long surface) {
+int neiv_surface_destroy(long long surface) {
     if (surface < 1) return -1;
     __block int status = -1;
     onMain(^{
@@ -1166,7 +1166,7 @@ int ceiv_surface_destroy(long long surface) {
     });
     return status;
 }
-int ceiv_surface_set_accessibility_label(long long surface, const char *label) {
+int neiv_surface_set_accessibility_label(long long surface, const char *label) {
     if (surface < 1 || !label || strlen(label) > 256) return -1;
     NSString *value = [NSString stringWithUTF8String:label];
     if (!value) return -1;
@@ -1207,7 +1207,7 @@ static long long createProviderSurface(long long windowHandle, NSString *identif
     });
     return surface;
 }
-int ceiv_surface_get_capabilities(long long windowHandle, const char *kind, int *values) {
+int neiv_surface_get_capabilities(long long windowHandle, const char *kind, int *values) {
     if (!kind || !values || strlen(kind) == 0 || strlen(kind) > 64) return -1;
     NSString *name = [NSString stringWithUTF8String:kind];
     if (!name) return -1;
@@ -1232,7 +1232,7 @@ int ceiv_surface_get_capabilities(long long windowHandle, const char *kind, int 
     });
     return status;
 }
-long long ceiv_surface_create_native(long long windowHandle, const char *slotId, const char *kind, const char *optionsJson) {
+long long neiv_surface_create_native(long long windowHandle, const char *slotId, const char *kind, const char *optionsJson) {
     if (!slotId || !kind || !optionsJson || strlen(slotId) > 64 || strlen(kind) > 64 || strlen(optionsJson) > 4096) return 0;
     NSString *identifier = [NSString stringWithUTF8String:slotId];
     NSString *name = [NSString stringWithUTF8String:kind];
@@ -1244,13 +1244,13 @@ long long ceiv_surface_create_native(long long windowHandle, const char *slotId,
     if (![options isKindOfClass:NSDictionary.class]) return 0;
     return createProviderSurface(windowHandle, identifier, name, options);
 }
-long long ceiv_surface_create_color(long long windowHandle, const char *slotId, int level) {
+long long neiv_surface_create_color(long long windowHandle, const char *slotId, int level) {
     if (!slotId || strlen(slotId) > 64 || level < 0 || level > 1000) return 0;
     NSString *identifier = [NSString stringWithUTF8String:slotId];
     if (!identifier.length) return 0;
     return createProviderSurface(windowHandle, identifier, @"color", @{@"level":@(level)});
 }
-int ceiv_surface_set_color_level(long long surface, int level) {
+int neiv_surface_set_color_level(long long surface, int level) {
     if (surface < 1 || level < 0 || level > 1000) return -1;
     __block int status = -1;
     onMain(^{
@@ -1263,7 +1263,7 @@ int ceiv_surface_set_color_level(long long surface, int level) {
     });
     return status;
 }
-int ceiv_surface_set_visible(long long surface, int visible) {
+int neiv_surface_set_visible(long long surface, int visible) {
     if (surface < 1 || (visible != 0 && visible != 1)) return -1;
     __block int status = -1;
     onMain(^{
@@ -1278,7 +1278,7 @@ int ceiv_surface_set_visible(long long surface, int visible) {
     });
     return status;
 }
-int ceiv_surface_detach(long long surface) {
+int neiv_surface_detach(long long surface) {
     if (surface < 1) return -1;
     __block int status = -1;
     onMain(^{
@@ -1293,7 +1293,7 @@ int ceiv_surface_detach(long long surface) {
     });
     return status;
 }
-int ceiv_surface_attach(long long surface) {
+int neiv_surface_attach(long long surface) {
     if (surface < 1) return -1;
     __block int status = -1;
     onMain(^{
@@ -1310,7 +1310,7 @@ int ceiv_surface_attach(long long surface) {
     });
     return status;
 }
-int ceiv_surface_get_metrics(long long surface, double *values) {
+int neiv_surface_get_metrics(long long surface, double *values) {
     if (surface < 1 || !values) return -1;
     __block int status = -1;
     onMain(^{
@@ -1330,7 +1330,7 @@ int ceiv_surface_get_metrics(long long surface, double *values) {
     });
     return status;
 }
-int ceiv_surface_focus(long long surface) {
+int neiv_surface_focus(long long surface) {
     if (surface < 1) return -1;
     __block int status = -1;
     onMain(^{
@@ -1345,7 +1345,7 @@ int ceiv_surface_focus(long long surface) {
     });
     return status;
 }
-int ceiv_surface_release_focus(long long surface) {
+int neiv_surface_release_focus(long long surface) {
     if (surface < 1) return -1;
     __block int status = -1;
     onMain(^{
@@ -1360,7 +1360,7 @@ int ceiv_surface_release_focus(long long surface) {
     });
     return status;
 }
-int ceiv_surface_set_suspended(long long surface, int suspended) {
+int neiv_surface_set_suspended(long long surface, int suspended) {
     if (surface < 1 || (suspended != 0 && suspended != 1)) return -1;
     __block int status = -1;
     onMain(^{
@@ -1378,7 +1378,7 @@ int ceiv_surface_set_suspended(long long surface, int suspended) {
     });
     return status;
 }
-int ceiv_surface_is_alive(long long surface) {
+int neiv_surface_is_alive(long long surface) {
     if (surface < 1) return 0;
     __block int alive = 0;
     onMain(^{
@@ -1388,7 +1388,7 @@ int ceiv_surface_is_alive(long long surface) {
     });
     return alive;
 }
-int ceiv_shell_open_external(const char *url) {
+int neiv_shell_open_external(const char *url) {
     if (![appCapabilities containsObject:@"shell.openExternal"]) return -2;
     if (!url || strlen(url) > 2048) return -1;
     NSString *text = [NSString stringWithUTF8String:url];
@@ -1401,7 +1401,7 @@ int ceiv_shell_open_external(const char *url) {
     onMain(^{ opened = [NSWorkspace.sharedWorkspace openURL:parts.URL]; });
     return opened ? 0 : -3;
 }
-int ceiv_clipboard_read_text(char *out, int capacity) {
+int neiv_clipboard_read_text(char *out, int capacity) {
     if (![appCapabilities containsObject:@"clipboard.read"]) return -2;
     if (!out || capacity < 1 || capacity > 65536) return -1;
     __block int count = -3;
@@ -1416,10 +1416,10 @@ int ceiv_clipboard_read_text(char *out, int capacity) {
     });
     return count;
 }
-int ceiv_clipboard_capability(int read) {
+int neiv_clipboard_capability(int read) {
     return [appCapabilities containsObject:read ? @"clipboard.read" : @"clipboard.write"] ? 1 : 0;
 }
-int ceiv_clipboard_write_text(const char *text) {
+int neiv_clipboard_write_text(const char *text) {
     if (![appCapabilities containsObject:@"clipboard.write"]) return -2;
     if (!text || strlen(text) > 65535) return -1;
     NSString *value = [NSString stringWithUTF8String:text];
@@ -1431,7 +1431,7 @@ int ceiv_clipboard_write_text(const char *text) {
     });
     return written ? 0 : -3;
 }
-int ceiv_tray_set_title(const char *title) {
+int neiv_tray_set_title(const char *title) {
     if (![appCapabilities containsObject:@"tray"]) return -2;
     if (!title || strlen(title) > 128) return -1;
     NSString *value = [NSString stringWithUTF8String:title];
@@ -1444,7 +1444,7 @@ int ceiv_tray_set_title(const char *title) {
     });
     return 0;
 }
-int ceiv_tray_clear(void) {
+int neiv_tray_clear(void) {
     if (![appCapabilities containsObject:@"tray"]) return -2;
     onMain(^{
         if (statusItem) [NSStatusBar.systemStatusBar removeStatusItem:statusItem];
@@ -1452,7 +1452,7 @@ int ceiv_tray_clear(void) {
     });
     return 0;
 }
-int ceiv_notification_show(const char *title, const char *body) {
+int neiv_notification_show(const char *title, const char *body) {
     if (![appCapabilities containsObject:@"notification.show"]) return -2;
     if (!title || !body || strlen(title) > 256 || strlen(body) > 2048) return -1;
     NSString *heading = [NSString stringWithUTF8String:title];
@@ -1468,7 +1468,7 @@ int ceiv_notification_show(const char *title, const char *body) {
             UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:NSUUID.UUID.UUIDString
                 content:content trigger:nil];
             [center addNotificationRequest:request withCompletionHandler:^(NSError *addError) {
-                if (addError) NSLog(@"Ceiv notification failed: %@", addError.localizedDescription);
+                if (addError) NSLog(@"Neiv notification failed: %@", addError.localizedDescription);
             }];
         }];
     return 0;

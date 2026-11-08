@@ -1,10 +1,10 @@
-import { configure_window } from ceiv.lib;
-import { current } from ceiv.window;
-import { SurfaceId, capabilities, create_native, is_alive, attach, detach } from ceiv.surface;
+import { configure_window } from neiv.lib;
+import { current } from neiv.window;
+import { SurfaceId, capabilities, create_native, is_alive, attach, detach } from neiv.surface;
 
 var video: ?SurfaceId = none;
 
-export c("ceiv_app_configure") fn configure(): void {
+export c("neiv_app_configure") fn configure(): void {
     const configured = configure_window("Cyna hybrid framework proof", 900, 600);
 }
 
@@ -36,13 +36,13 @@ export c("cyna_app_video_attach") fn video_attach(): c_int {
 }
 
 // The host owns native commands. UI state remains in JavaScript.
-// @ceiv {"name":"math.add","args":{"value":{"type":"int32","min":-1000000,"max":1000000},"delta":{"type":"int32","min":-1000000,"max":1000000}}}
+// @neiv {"name":"math.add","args":{"value":{"type":"int32","min":-1000000,"max":1000000},"delta":{"type":"int32","min":-1000000,"max":1000000}}}
 export c("cyna_app_add") fn add(value: c_int, delta: c_int): c_int {
     return value + delta;
 }
 
 // A native surface may receive derived state without sending pixels to JS.
-// @ceiv {"name":"surface.setLevel","binding":"setSurfaceLevel","args":{"level":{"type":"int32","min":0,"max":1000}}}
+// @neiv {"name":"surface.setLevel","binding":"setSurfaceLevel","args":{"level":{"type":"int32","min":0,"max":1000}}}
 export c("cyna_app_surface_level") fn surface_level(level: c_int): c_int {
     return level * level / 1000;
 }

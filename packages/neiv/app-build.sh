@@ -24,7 +24,7 @@ EOF
 weiv_cli="$repo/node_modules/weivjs/bin/weiv.mjs"
 if [ ! -f "$weiv_cli" ]; then weiv_cli="$repo/../weivjs/bin/weiv.mjs"; fi
 if [ ! -f "$weiv_cli" ]; then weiv_cli="$repo/../weiv/packages/weiv/bin/weiv.mjs"; fi
-if [ ! -f "$weiv_cli" ]; then echo "Install Ceiv dependencies to provide the Weiv compiler" >&2; exit 2; fi
+if [ ! -f "$weiv_cli" ]; then echo "Install Neiv dependencies to provide the Weiv compiler" >&2; exit 2; fi
 node "$weiv_cli" compile emit app "$app/web/App.weiv" "$out/web"
 cp "$app/web/generated/"*.d.ts "$out/web/generated/"
 node "$repo/scripts/install-frontend.mjs" "$out/web"
@@ -40,10 +40,10 @@ EOF
 cat > "$out/main.m" <<EOF
 #import "$repo/native/app_host.h"
 #include "$app/native/generated/dispatch.inc"
-extern void ceiv_app_configure(void);
+extern void neiv_app_configure(void);
 int main(int argc, const char *argv[]) {
     (void)argc; (void)argv;
-    return cyna_run_app(dispatch_command, ceiv_app_configure);
+    return cyna_run_app(dispatch_command, neiv_app_configure);
 }
 EOF
 library="$out/lib$library_name.a"
@@ -54,15 +54,15 @@ if [ "$plugin" = CynaVideoPlugin ]; then
   clang -fobjc-arc -framework AppKit -framework WebKit -framework CoreGraphics -framework UserNotifications -framework UniformTypeIdentifiers \
     -framework QuartzCore -framework CoreMedia -framework AVFoundation \
     -I "$repo/native" "$repo/native/video_plugin.m" "$repo/native/video.m" \
-    "$out/main.m" "$host_library" "$library" -o "$out/CeivApp"
+    "$out/main.m" "$host_library" "$library" -o "$out/NeivApp"
 elif [ "$plugin" = CynaColorPlugin ]; then
   clang -fobjc-arc -framework AppKit -framework WebKit -framework CoreGraphics -framework UserNotifications -framework UniformTypeIdentifiers \
     -framework Metal -framework MetalKit -framework QuartzCore \
     -I "$repo/native" "$repo/native/color_plugin.m" "$repo/native/surface.m" \
-    "$out/main.m" "$host_library" "$library" -o "$out/CeivApp"
+    "$out/main.m" "$host_library" "$library" -o "$out/NeivApp"
 elif [ -z "$plugin" ]; then
   clang -fobjc-arc -framework AppKit -framework WebKit -framework CoreGraphics -framework UserNotifications -framework UniformTypeIdentifiers \
-    -I "$repo/native" "$out/main.m" "$host_library" "$library" -o "$out/CeivApp"
+    -I "$repo/native" "$out/main.m" "$host_library" "$library" -o "$out/NeivApp"
 else
   set --
   for source in $(node -e 'const m=require(process.argv[1]); for(const path of m.nativeSources) console.log(path)' "$app/app.json"); do
@@ -72,12 +72,12 @@ else
     set -- "$@" -framework "$framework"
   done
   clang -fobjc-arc -framework AppKit -framework WebKit -framework CoreGraphics -framework UserNotifications -framework UniformTypeIdentifiers \
-    -I "$repo/native" "$@" "$out/main.m" "$host_library" "$library" -o "$out/CeivApp"
+    -I "$repo/native" "$@" "$out/main.m" "$host_library" "$library" -o "$out/NeivApp"
 fi
-bundle="$out/CeivApp.app/Contents"
+bundle="$out/NeivApp.app/Contents"
 rm -rf "$bundle"
 mkdir -p "$bundle/MacOS" "$bundle/Resources/web"
-cp "$out/CeivApp" "$bundle/MacOS/CeivApp"
+cp "$out/NeivApp" "$bundle/MacOS/NeivApp"
 cp "$app/app.json" "$bundle/Resources/app.json"
 node - "$app" "$bundle/Resources" <<'EOF'
 const fs = require('fs');
@@ -103,6 +103,6 @@ node - "$app/app.json" "$bundle/Info.plist" <<'EOF'
 const fs = require('fs');
 const manifest = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-fs.writeFileSync(process.argv[3], `<?xml version="1.0" encoding="UTF-8"?>\n<plist version="1.0"><dict>\n<key>CFBundleIdentifier</key><string>${escape(manifest.id)}</string>\n<key>CFBundleName</key><string>${escape(manifest.name)}</string>\n<key>CFBundleShortVersionString</key><string>${escape(manifest.version || "0.1.0")}</string>\n<key>CFBundleVersion</key><string>${escape(manifest.version || "0.1.0")}</string>\n${manifest.icon ? "<key>CFBundleIconFile</key><string>icon.icns</string>\n" : ""}<key>CFBundleExecutable</key><string>CeivApp</string>\n<key>CFBundlePackageType</key><string>APPL</string>\n<key>NSHighResolutionCapable</key><true/>\n</dict></plist>\n`);
+fs.writeFileSync(process.argv[3], `<?xml version="1.0" encoding="UTF-8"?>\n<plist version="1.0"><dict>\n<key>CFBundleIdentifier</key><string>${escape(manifest.id)}</string>\n<key>CFBundleName</key><string>${escape(manifest.name)}</string>\n<key>CFBundleShortVersionString</key><string>${escape(manifest.version || "0.1.0")}</string>\n<key>CFBundleVersion</key><string>${escape(manifest.version || "0.1.0")}</string>\n${manifest.icon ? "<key>CFBundleIconFile</key><string>icon.icns</string>\n" : ""}<key>CFBundleExecutable</key><string>NeivApp</string>\n<key>CFBundlePackageType</key><string>APPL</string>\n<key>NSHighResolutionCapable</key><true/>\n</dict></plist>\n`);
 EOF
-echo "$out/CeivApp.app"
+echo "$out/NeivApp.app"
