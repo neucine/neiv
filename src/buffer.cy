@@ -1,4 +1,4 @@
-// Private adapter for bounded host output buffers on Cyna 0.4.1.
+// Private adapter for bounded host output buffers on Cyna 0.5.0.
 extern c("malloc") fn malloc(size: c_size_t): *c_void;
 extern c("free") fn free(ptr: *c_void): void;
 extern c("neiv_window_open_options") fn host_open_options(title: *const c_char, width: c_int, height: c_int, min_width: c_int, min_height: c_int, visible: c_int): c_long;

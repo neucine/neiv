@@ -19,7 +19,7 @@ package is installed or linked. Commands accept an app directory; `build`,
 | `build [directory]` | Generate bindings, compile Cyna and Weiv, link the macOS host, and package `build/NeivApp.app`. |
 | `run [directory]` | Build and open a new app instance. |
 
-The build currently requires macOS, Cyna 0.4.1, Node 22, Xcode Command Line
+The build currently requires macOS, Cyna 0.5.0, Node 22, Xcode Command Line
 Tools, and the package-provided `weivjs` dependency. The npm package can be installed
 outside the Neiv checkout.
 

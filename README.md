@@ -5,7 +5,7 @@ Neiv is a framework for macOS apps with a [Weiv](https://github.com/neucine/weiv
 ## Requirements
 
 - macOS and Xcode Command Line Tools
-- Cyna 0.4.1
+- Cyna 0.5.0
 - Node.js 22 or later
 
 The Neiv npm package supplies its Weiv dependency. To use the CLI from this checkout, install the package dependencies first:
