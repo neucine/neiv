@@ -262,6 +262,7 @@ int neiv_set_initial_window(const char *title, int width, int height) {
                                            NSMidY(target.visibleFrame) - height / 2)];
     self.assetRoot = [[[[NSBundle mainBundle].resourcePath stringByAppendingPathComponent:@"web"] stringByResolvingSymlinksInPath] stringByStandardizingPath];
     WKWebViewConfiguration *config = [WKWebViewConfiguration new];
+    config.websiteDataStore = WKWebsiteDataStore.nonPersistentDataStore;
     [config.userContentController addScriptMessageHandler:self name:@"cyna"];
     NSString *pluginName = manifest[@"nativePlugin"];
     [config.userContentController addScriptMessageHandler:self name:@"surface"];
@@ -730,16 +731,17 @@ static long long nextSurfaceHandle;
     runningHost = self;
     NSMenu *mainMenu = [NSMenu new];
     NSMenuItem *appItem = [NSMenuItem new];
+    appItem.title = appManifest[@"name"];
     [mainMenu addItem:appItem];
     NSMenu *appMenu = [NSMenu new];
     [appMenu addItemWithTitle:@"Quit" action:@selector(terminate:) keyEquivalent:@"q"];
     appItem.submenu = appMenu;
     NSMenuItem *fileItem = [NSMenuItem new];
+    fileItem.title = @"File";
     [mainMenu addItem:fileItem];
     NSMenu *fileMenu = [NSMenu new];
     [fileMenu addItemWithTitle:@"New Window" action:@selector(newWindow:) keyEquivalent:@"n"].target = self;
     [fileMenu addItemWithTitle:@"Close Window" action:@selector(closeWindow:) keyEquivalent:@"w"].target = self;
-    [fileMenu addItemWithTitle:@"Reload Window" action:@selector(reloadWindow:) keyEquivalent:@"r"].target = self;
     fileItem.submenu = fileMenu;
     if (applicationMenuTree.count) {
         NSMenuItem *customItem = [NSMenuItem new];
