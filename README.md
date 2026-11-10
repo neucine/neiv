@@ -30,6 +30,8 @@ node packages/neiv/bin/neiv.mjs run ../my-app
 
 Edit `../my-app/src/lib.cy` for native app operations and `../my-app/web/App.weiv` for the interface. Neiv generates typed command and event bindings under `web/generated/`. The [app architecture guide](docs/app-architecture.md) explains where to put behavior; the [API guide](docs/api.md) covers commands, events, native services, and the CLI.
 
+For a desktop client backed by a local server, declare `localHttp` in the app manifest. Neiv can bundle and manage any server executable, and supplies the native loopback HTTP bridge, client module `neiv/http`, and macOS local networking permission. See [local HTTP client and server apps](docs/api.md#local-http-client-and-server-apps).
+
 ## Examples
 
 The [examples](examples/README.md) are independent app projects:

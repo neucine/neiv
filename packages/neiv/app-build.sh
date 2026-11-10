@@ -49,7 +49,7 @@ EOF
 library="$out/lib$library_name.a"
 test -f "$library"
 host_library=$(sh "$repo/native/build-host.sh" | tail -1)
-plugin=$(node -e 'const m=require(process.argv[1]); process.stdout.write(m.nativePlugin || "")' "$app/app.json")
+plugin=$(node -e 'const m=require(process.argv[1]); process.stdout.write(m.localHttp ? "NeivHttpPlugin" : m.nativePlugin || "")' "$app/app.json")
 if [ "$plugin" = CynaVideoPlugin ]; then
   clang -fobjc-arc -framework AppKit -framework WebKit -framework CoreGraphics -framework UserNotifications -framework UniformTypeIdentifiers \
     -framework QuartzCore -framework CoreMedia -framework AVFoundation \
@@ -59,6 +59,10 @@ elif [ "$plugin" = CynaColorPlugin ]; then
   clang -fobjc-arc -framework AppKit -framework WebKit -framework CoreGraphics -framework UserNotifications -framework UniformTypeIdentifiers \
     -framework Metal -framework MetalKit -framework QuartzCore \
     -I "$repo/native" "$repo/native/color_plugin.m" "$repo/native/surface.m" \
+    "$out/main.m" "$host_library" "$library" -o "$out/NeivApp"
+elif [ "$plugin" = NeivHttpPlugin ]; then
+  clang -fobjc-arc -framework AppKit -framework WebKit -framework CoreGraphics -framework UserNotifications -framework UniformTypeIdentifiers \
+    -I "$repo/native" "$repo/native/http_plugin.m" \
     "$out/main.m" "$host_library" "$library" -o "$out/NeivApp"
 elif [ -z "$plugin" ]; then
   clang -fobjc-arc -framework AppKit -framework WebKit -framework CoreGraphics -framework UserNotifications -framework UniformTypeIdentifiers \
@@ -96,6 +100,11 @@ for (const item of manifest.resources || []) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.copyFileSync(path.join(app, item.source), target);
 }
+if (manifest.localHttp && typeof manifest.localHttp === 'object') {
+  const source = path.join(app, manifest.localHttp.server.source);
+  const target = path.join(resources, 'local-http-server');
+  fs.cpSync(source, target, { recursive: true });
+}
 EOF
 rm -rf "$bundle/Resources/web"
 cp -R "$out/web" "$bundle/Resources/web"
@@ -103,6 +112,6 @@ node - "$app/app.json" "$bundle/Info.plist" <<'EOF'
 const fs = require('fs');
 const manifest = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-fs.writeFileSync(process.argv[3], `<?xml version="1.0" encoding="UTF-8"?>\n<plist version="1.0"><dict>\n<key>CFBundleIdentifier</key><string>${escape(manifest.id)}</string>\n<key>CFBundleName</key><string>${escape(manifest.name)}</string>\n<key>CFBundleShortVersionString</key><string>${escape(manifest.version || "0.1.0")}</string>\n<key>CFBundleVersion</key><string>${escape(manifest.version || "0.1.0")}</string>\n${manifest.icon ? "<key>CFBundleIconFile</key><string>icon.icns</string>\n" : ""}<key>CFBundleExecutable</key><string>NeivApp</string>\n<key>CFBundlePackageType</key><string>APPL</string>\n<key>NSHighResolutionCapable</key><true/>\n</dict></plist>\n`);
+fs.writeFileSync(process.argv[3], `<?xml version="1.0" encoding="UTF-8"?>\n<plist version="1.0"><dict>\n<key>CFBundleIdentifier</key><string>${escape(manifest.id)}</string>\n<key>CFBundleName</key><string>${escape(manifest.name)}</string>\n<key>CFBundleShortVersionString</key><string>${escape(manifest.version || "0.1.0")}</string>\n<key>CFBundleVersion</key><string>${escape(manifest.version || "0.1.0")}</string>\n${manifest.icon ? "<key>CFBundleIconFile</key><string>icon.icns</string>\n" : ""}<key>CFBundleExecutable</key><string>NeivApp</string>\n<key>CFBundlePackageType</key><string>APPL</string>\n<key>NSHighResolutionCapable</key><true/>\n${manifest.localHttp ? "<key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>\n" : ""}</dict></plist>\n`);
 EOF
 echo "$out/NeivApp.app"

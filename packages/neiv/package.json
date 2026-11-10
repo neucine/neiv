@@ -5,7 +5,8 @@
   "scripts": { "prepack": "node scripts/build-frontend.mjs && sh scripts/ensure-cyna-package.sh" },
   "exports": {
     "./sdk": { "types": "./dist/sdk.d.ts", "default": "./dist/sdk.js" },
-    "./slots": { "types": "./dist/slots.d.ts", "default": "./dist/slots.js" }
+    "./slots": { "types": "./dist/slots.d.ts", "default": "./dist/slots.js" },
+    "./http": { "types": "./dist/http.d.ts", "default": "./dist/http.js" }
   },
   "bin": { "neiv": "bin/neiv.mjs" },
   "engines": { "node": ">=22" },

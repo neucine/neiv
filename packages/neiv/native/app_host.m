@@ -265,6 +265,8 @@ int neiv_set_initial_window(const char *title, int width, int height) {
     config.websiteDataStore = WKWebsiteDataStore.nonPersistentDataStore;
     [config.userContentController addScriptMessageHandler:self name:@"cyna"];
     NSString *pluginName = manifest[@"nativePlugin"];
+    if ([manifest[@"localHttp"] isEqual:@YES] || [manifest[@"localHttp"] isKindOfClass:NSDictionary.class])
+        pluginName = @"NeivHttpPlugin";
     [config.userContentController addScriptMessageHandler:self name:@"surface"];
     if ([pluginName isKindOfClass:NSString.class]) {
         Class pluginClass = NSClassFromString(pluginName);

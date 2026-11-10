@@ -23,6 +23,16 @@ if (manifest.capabilities.some(value => !capabilities.has(value)) ||
     new Set(manifest.capabilities).size !== manifest.capabilities.length)
   throw new Error("unknown or duplicate app.capabilities entry");
 if (manifest.window !== undefined) throw new Error("app.window is obsolete; configure the window in Cyna code");
+const localHttpServer = manifest.localHttp && typeof manifest.localHttp === "object" && !Array.isArray(manifest.localHttp)
+  ? manifest.localHttp.server : undefined;
+if (manifest.localHttp !== undefined && manifest.localHttp !== true && !localHttpServer)
+  throw new Error("app.localHttp must be true or contain a server");
+if (localHttpServer && (!safeFile(localHttpServer.source) || !safeFile(localHttpServer.executable) ||
+    !Array.isArray(localHttpServer.args) || !localHttpServer.args.every(value => typeof value === "string" &&
+      value.length > 0 && value.length <= 256) || !existsSync(join(app, localHttpServer.source, localHttpServer.executable))))
+  throw new Error("invalid app.localHttp.server");
+if (manifest.localHttp && manifest.nativePlugin !== undefined)
+  throw new Error("app.localHttp cannot be combined with nativePlugin");
 if (manifest.nativePlugin !== undefined && (typeof manifest.nativePlugin !== "string" ||
     !/^[A-Z][A-Za-z0-9_]{0,63}$/.test(manifest.nativePlugin)))
   throw new Error("invalid native plugin class");

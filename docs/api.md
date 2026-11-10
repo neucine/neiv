@@ -89,6 +89,39 @@ exposes `currentWindow`, `setCloseHandler`, and `createActionContext`. A close
 handler returns a boolean or promise; a missing reply cancels the close after
 five minutes. The hello app exercises these APIs.
 
+## Local HTTP client and server apps
+
+Set `localHttp` in `app.json` when a Neiv page talks to a local server. Neiv links its native HTTP bridge and adds `NSAllowsLocalNetworking` to the app's Info.plist. An app using this option cannot also declare `nativePlugin`; no app owned Objective-C source or plist patch is needed.
+
+For a standalone desktop app, bundle any server executable with the app:
+
+```json
+{ "localHttp": { "server": { "source": "server", "executable": "bin/server", "args": [] } } }
+```
+
+Neiv copies `source` into `Resources/local-http-server`, starts `executable` from that directory when the app opens, and stops it when the last window closes. The executable can use any language or runtime. It must print one JSON line on stdout within 15 seconds, then keep serving until terminated:
+
+```json
+{ "endpoint": "http://127.0.0.1:PORT", "headers": { "X-Session-Token": "PRIVATE_TOKEN" } }
+```
+
+The native bridge accepts only a loopback HTTP endpoint, sends the configured headers on every request, and never exposes them to the page. Use a fresh, unguessable token per launch and require it on the server. Neiv owns the bundled server process lifecycle; the server owns authentication and routes.
+
+`"localHttp": true` also supports a server started outside the app: write the same JSON to `Resources/neiv-http.json` before opening the app. Keep that file outside `Resources/web` and set its permissions to owner only. The external launcher owns that server's lifecycle.
+
+In the Weiv page, import `localHttp` from `neiv/http`:
+
+```ts
+import { localHttp } from "neiv/http";
+const state = await localHttp.request<{ ready: boolean }>("/state");
+const stop = localHttp.subscribe("/events", "main", event => {
+  if (event.kind === "data") console.log(event.value);
+});
+// Call stop() when the view no longer needs the stream.
+```
+
+`request` supports JSON `GET` and `POST`. `subscribe` reads server sent events and returns a function that closes the stream. Paths must be absolute paths on the configured loopback origin. Neiv accepts JSON event payloads and limits request and stream frame sizes to 1 MiB.
+
 ## Native plugin callbacks
 
 An app with a native plugin can expose a Cyna function to that plugin without
