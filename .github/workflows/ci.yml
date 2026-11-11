@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quick-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check release tooling syntax
+        run: |
+          node --check tools/release.mjs
+          node --check packages/neiv/scripts/build-frontend.mjs
+      - name: Run source tooling tests
+        run: |
+          node tests/discovery-test.mjs
+          node tests/callback-generator.mjs
