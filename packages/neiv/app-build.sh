@@ -21,7 +21,15 @@ process.stdout.write(match[1]);
 EOF
 )
 (cd "$app" && cyna install build/cyna.toml && cyna check build/cyna.toml && cyna build build/cyna.toml --output "$out/lib$library_name.a")
-weiv_cli="$repo/node_modules/weivjs/bin/weiv.mjs"
+if [ -n "${WEIV_BINARY_PATH:-}" ] && [ -z "${WEIV_PACKAGE_ROOT:-}" ]; then
+  echo "WEIV_BINARY_PATH requires WEIV_PACKAGE_ROOT so compiler and runtime come from the same Weiv package" >&2
+  exit 2
+fi
+weiv_cli="${WEIV_PACKAGE_ROOT:-$repo/node_modules/weivjs}/bin/weiv.mjs"
+if [ -n "${WEIV_PACKAGE_ROOT:-}" ] && [ ! -f "$weiv_cli" ]; then
+  echo "WEIV_PACKAGE_ROOT does not contain bin/weiv.mjs: $WEIV_PACKAGE_ROOT" >&2
+  exit 2
+fi
 if [ ! -f "$weiv_cli" ]; then weiv_cli="$repo/../weivjs/bin/weiv.mjs"; fi
 if [ ! -f "$weiv_cli" ]; then weiv_cli="$repo/../weiv/packages/weiv/bin/weiv.mjs"; fi
 if [ ! -f "$weiv_cli" ]; then echo "Install Neiv dependencies to provide the Weiv compiler" >&2; exit 2; fi
