@@ -1,0 +1,33 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.7/schema.json",
+  "files": {
+    "includes": [
+      "examples/**/*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css,scss}",
+      "packages/**/*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css,scss}",
+      "tests/**/*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css,scss}",
+      "tools/**/*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css,scss}",
+      "!**/node_modules/**",
+      "!**/dist/**",
+      "!**/cyna-dist/**",
+      "!examples/**/generated/**"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 110
+  },
+  "javascript": {
+    "formatter": {
+      "arrowParentheses": "asNeeded",
+      "quoteStyle": "double",
+      "semicolons": "always"
+    }
+  },
+  "json": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
+  }
+}

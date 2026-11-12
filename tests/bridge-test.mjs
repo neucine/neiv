@@ -6,13 +6,29 @@ import { pathToFileURL } from "node:url";
 const messages = [];
 const listeners = new Map();
 const documentListeners = new Map();
-globalThis.document = { addEventListener(name, handler) { documentListeners.set(name, handler); } };
+globalThis.document = {
+  addEventListener(name, handler) {
+    documentListeners.set(name, handler);
+  },
+};
 globalThis.window = {
-  webkit: { messageHandlers: { cyna: { postMessage(value) { messages.push(value); } } } },
-  addEventListener(name, handler) { listeners.set(name, handler); },
+  webkit: {
+    messageHandlers: {
+      cyna: {
+        postMessage(value) {
+          messages.push(value);
+        },
+      },
+    },
+  },
+  addEventListener(name, handler) {
+    listeners.set(name, handler);
+  },
 };
 const generated = dirname(process.argv[2]);
-const fixture = mkdtempSync(join(dirname(new URL(import.meta.url).pathname), "../packages/neiv/.bridge-test-"));
+const fixture = mkdtempSync(
+  join(dirname(new URL(import.meta.url).pathname), "../packages/neiv/.bridge-test-"),
+);
 process.on("exit", () => rmSync(fixture, { recursive: true, force: true }));
 for (const name of ["commands", "events"]) {
   const source = readFileSync(join(generated, `${name}.js`), "utf8")
@@ -20,25 +36,47 @@ for (const name of ["commands", "events"]) {
     .replaceAll('"/__weiv_packages/neiv/sdk"', '"neiv/sdk"');
   writeFileSync(join(fixture, `${name}.js`), source);
 }
-const { doubleValue, scoreText, sizePayload, labelText, halfValue, invert, summary } =
-  await import(pathToFileURL(join(fixture, "commands.js")).href);
-const { CynaError, currentWindow, setCloseHandler, createActionContext,
-  popupContextMenu, dialogs, shell, clipboard } =
-  await import(pathToFileURL(join(dirname(new URL(import.meta.url).pathname), "../packages/neiv/dist/sdk.js")).href);
+const { doubleValue, scoreText, sizePayload, labelText, halfValue, invert, summary } = await import(
+  pathToFileURL(join(fixture, "commands.js")).href
+);
+const {
+  CynaError,
+  currentWindow,
+  setCloseHandler,
+  createActionContext,
+  popupContextMenu,
+  dialogs,
+  shell,
+  clipboard,
+} = await import(
+  pathToFileURL(join(dirname(new URL(import.meta.url).pathname), "../packages/neiv/dist/sdk.js")).href
+);
 const { events } = await import(pathToFileURL(join(fixture, "events.js")).href);
 const beforeHandshake = doubleValue(3);
 assert.deepEqual(messages, [{ kind: "hello" }]);
 window.cynaHandshake({ protocol: 1, window: "window-a", handle: 1, generation: 1 });
 await Promise.resolve();
-assert.deepEqual(messages[1], { protocol: 1, window: "window-a", handle: 1, generation: 1,
-  id: 1, kind: "invoke", command: "math.double", args: { value: 3 }, deadlineMs: 10000 });
+assert.deepEqual(messages[1], {
+  protocol: 1,
+  window: "window-a",
+  handle: 1,
+  generation: 1,
+  id: 1,
+  kind: "invoke",
+  command: "math.double",
+  args: { value: 3 },
+  deadlineMs: 10000,
+});
 window.cynaReply({ id: 1, ok: true, value: 6 });
 assert.equal(await beforeHandshake, 6);
 
 await assert.rejects(scoreText("a".repeat(65), true, 2), error => error.code === "INVALID_ARGUMENT");
 await assert.rejects(scoreText("Cyna", 1, 2), error => error.code === "INVALID_ARGUMENT");
 await assert.rejects(scoreText("Cyna", true, Infinity), error => error.code === "INVALID_ARGUMENT");
-await assert.rejects(sizePayload({ title: "x", flags: [true, false, true, false, true] }), error => error.code === "INVALID_ARGUMENT");
+await assert.rejects(
+  sizePayload({ title: "x", flags: [true, false, true, false, true] }),
+  error => error.code === "INVALID_ARGUMENT",
+);
 const score = scoreText("Cyna", true, 2);
 await Promise.resolve();
 window.cynaReply({ id: 2, ok: true, value: 8 });
@@ -87,15 +125,40 @@ await Promise.resolve();
 assert.equal(messages.at(-1).kind, "subscribe");
 window.cynaReply({ id: 10, ok: true, value: "subscription-a" });
 const unsubscribe = await subscribed;
-window.cynaEvent({ topic: "app.windows", subscriptionId: "subscription-a", sequence: 1, payload: { state: "opened", window: 3 } });
-window.cynaEvent({ topic: "app.windows", subscriptionId: "subscription-a", sequence: 2, payload: { state: "resized", window: 3, width: "bad", height: 400 } });
-window.cynaEvent({ topic: "app.windows", subscriptionId: "subscription-a", sequence: 1, payload: { state: "stale", window: 3 } });
+window.cynaEvent({
+  topic: "app.windows",
+  subscriptionId: "subscription-a",
+  sequence: 1,
+  payload: { state: "opened", window: 3 },
+});
+window.cynaEvent({
+  topic: "app.windows",
+  subscriptionId: "subscription-a",
+  sequence: 2,
+  payload: { state: "resized", window: 3, width: "bad", height: 400 },
+});
+window.cynaEvent({
+  topic: "app.windows",
+  subscriptionId: "subscription-a",
+  sequence: 1,
+  payload: { state: "stale", window: 3 },
+});
 assert.deepEqual(observed, [{ state: "opened", window: 3 }]);
-window.cynaEvent({ topic: "app.windows", subscriptionId: "subscription-a", sequence: 3, payload: { state: "resized", window: 3, width: 640, height: 400 } });
+window.cynaEvent({
+  topic: "app.windows",
+  subscriptionId: "subscription-a",
+  sequence: 3,
+  payload: { state: "resized", window: 3, width: 640, height: 400 },
+});
 assert.deepEqual(observed[1], { state: "resized", window: 3, width: 640, height: 400 });
 unsubscribe();
 assert.equal(messages.at(-1).kind, "unsubscribe");
-window.cynaEvent({ topic: "app.windows", subscriptionId: "subscription-a", sequence: 2, payload: { state: "closed", window: 3 } });
+window.cynaEvent({
+  topic: "app.windows",
+  subscriptionId: "subscription-a",
+  sequence: 2,
+  payload: { state: "closed", window: 3 },
+});
 assert.equal(observed.length, 2);
 const composite = summary();
 await Promise.resolve();
@@ -106,7 +169,12 @@ await Promise.resolve();
 assert.equal(messages.at(-1).topic, "app.windows");
 window.cynaReply({ id: 13, ok: true, value: "subscription-b" });
 for (let i = 0; i < 8; i++) await Promise.resolve();
-window.cynaEvent({ topic: "app.windows", subscriptionId: "subscription-b", sequence: 1, payload: { state: "opened", window: 4 } });
+window.cynaEvent({
+  topic: "app.windows",
+  subscriptionId: "subscription-b",
+  sequence: 1,
+  payload: { state: "opened", window: 4 },
+});
 assert.deepEqual(await once, { state: "opened", window: 4 });
 assert.equal(messages.at(-1).kind, "unsubscribe");
 const invalidatedOnce = events.once("app.windows");
@@ -127,30 +195,100 @@ const customRequest = messages.at(-1);
 assert.equal(customRequest.topic, "hello.updated");
 window.cynaReply({ id: customRequest.id, ok: true, value: "subscription-custom" });
 const stopCustom = await customSubscription;
-window.cynaEvent({ topic: "hello.updated", subscriptionId: "subscription-custom", sequence: 1, payload: { message: 123 } });
+window.cynaEvent({
+  topic: "hello.updated",
+  subscriptionId: "subscription-custom",
+  sequence: 1,
+  payload: { message: 123 },
+});
 assert.deepEqual(customEvents, []);
-window.cynaEvent({ topic: "hello.updated", subscriptionId: "subscription-custom", sequence: 3, payload: { message: "new" } });
-window.cynaEvent({ topic: "hello.updated", subscriptionId: "subscription-custom", sequence: 2, payload: { message: "old" } });
+window.cynaEvent({
+  topic: "hello.updated",
+  subscriptionId: "subscription-custom",
+  sequence: 3,
+  payload: { message: "new" },
+});
+window.cynaEvent({
+  topic: "hello.updated",
+  subscriptionId: "subscription-custom",
+  sequence: 2,
+  payload: { message: "old" },
+});
 assert.deepEqual(customEvents, [{ message: "new" }]);
 stopCustom();
 
-let appRuns = 0, viewRuns = 0, focused = false, lastAction, lastViewAction;
-const element = { matches() { return focused; }, isConnected: true, getBoundingClientRect() { return { left: 10, bottom: 20 }; } };
-const appContext = createActionContext({ scope: "app", actions: { "demo.action": { run(invocation) { appRuns++; lastAction = invocation; } } } });
-const viewContext = createActionContext({ scope: "view", element, actions: { "demo.action": { run(invocation) { viewRuns++; lastViewAction = invocation; } } } });
-appContext.activate(); viewContext.activate();
+let appRuns = 0,
+  viewRuns = 0,
+  focused = false,
+  lastAction,
+  lastViewAction;
+const element = {
+  matches() {
+    return focused;
+  },
+  isConnected: true,
+  getBoundingClientRect() {
+    return { left: 10, bottom: 20 };
+  },
+};
+const appContext = createActionContext({
+  scope: "app",
+  actions: {
+    "demo.action": {
+      run(invocation) {
+        appRuns++;
+        lastAction = invocation;
+      },
+    },
+  },
+});
+const viewContext = createActionContext({
+  scope: "view",
+  element,
+  actions: {
+    "demo.action": {
+      run(invocation) {
+        viewRuns++;
+        lastViewAction = invocation;
+      },
+    },
+  },
+});
+appContext.activate();
+viewContext.activate();
 await window.cynaAction({ id: "demo.action", source: "menu", window: 3, data: null, requestId: "action-a" });
 assert.equal(appRuns, 1);
 assert.deepEqual(lastAction, { id: "demo.action", source: "menu", window: 3, data: null });
-focused = true; documentListeners.get("focusin")();
-await window.cynaAction({ id: "demo.action", source: "shortcut", window: 3, data: null, requestId: "action-b" });
+focused = true;
+documentListeners.get("focusin")();
+await window.cynaAction({
+  id: "demo.action",
+  source: "shortcut",
+  window: 3,
+  data: null,
+  requestId: "action-b",
+});
 assert.equal(viewRuns, 1);
-await window.cynaAction({ id: "demo.action", source: "context", window: 3, data: { text: "x" }, requestId: "action-context" });
+await window.cynaAction({
+  id: "demo.action",
+  source: "context",
+  window: 3,
+  data: { text: "x" },
+  requestId: "action-context",
+});
 assert.deepEqual(lastViewAction, { id: "demo.action", source: "context", window: 3, data: { text: "x" } });
 viewContext.update("demo.action", { enabled: false });
-await window.cynaAction({ id: "demo.action", source: "context", window: 3, data: { text: "x" }, requestId: "action-c" });
-assert.equal(viewRuns, 2); assert.equal(appRuns, 1);
-viewContext.dispose(); appContext.dispose();
+await window.cynaAction({
+  id: "demo.action",
+  source: "context",
+  window: 3,
+  data: { text: "x" },
+  requestId: "action-c",
+});
+assert.equal(viewRuns, 2);
+assert.equal(appRuns, 1);
+viewContext.dispose();
+appContext.dispose();
 assert.equal(messages.at(-1).kind, "action-state");
 assert.deepEqual(messages.at(-1).states, {});
 
@@ -177,7 +315,11 @@ const external = shell.openExternal("https://example.com");
 await Promise.resolve();
 const externalRequest = messages.at(-1);
 assert.equal(externalRequest.command, "__neiv.shell.openExternal");
-window.cynaReply({ id: externalRequest.id, ok: false, error: { code: "CAPABILITY_DENIED", message: "Denied" } });
+window.cynaReply({
+  id: externalRequest.id,
+  ok: false,
+  error: { code: "CAPABILITY_DENIED", message: "Denied" },
+});
 await assert.rejects(external, error => error.code === "CAPABILITY_DENIED");
 const copied = clipboard.readText();
 await Promise.resolve();
@@ -186,7 +328,10 @@ assert.equal(clipboardRequest.command, "__neiv.clipboard.readText");
 window.cynaReply({ id: clipboardRequest.id, ok: true, value: "Neiv" });
 assert.equal(await copied, "Neiv");
 let closeCalls = 0;
-const removeCloseHandler = setCloseHandler(async () => { closeCalls++; return closeCalls > 1; });
+const removeCloseHandler = setCloseHandler(async () => {
+  closeCalls++;
+  return closeCalls > 1;
+});
 assert.equal(messages.at(-1).kind, "close-handler");
 assert.equal(messages.at(-1).enabled, true);
 await window.cynaCloseRequest({ requestId: "close-a" });

@@ -4,28 +4,55 @@ import { join, resolve } from "node:path";
 const check = process.argv[2] === "--check";
 const root = resolve(process.argv[check ? 3 : 2] || ".");
 const src = join(root, "src");
-const files = readdirSync(src, { recursive: true }).filter(file => file.endsWith(".cy") && !file.startsWith("generated/") && file !== "neiv_callbacks.cy").sort();
+const files = readdirSync(src, { recursive: true })
+  .filter(file => file.endsWith(".cy") && !file.startsWith("generated/") && file !== "neiv_callbacks.cy")
+  .sort();
 const callbacks = [];
 const identifier = /^[A-Za-z_][A-Za-z_0-9]*$/;
-const allowedType = /^(?:void|i32|u32|i64|usize|c_int|c_uint|c_long|c_size_t|\*const u8|\*u8|\*u32|\*const c_char|\*const c_uchar|\*c_uchar|\*c_uint|native_buffer\.(?:ReadBuffer|WriteBuffer))$/;
-const abiTypes = { i32: "c_int", u32: "c_uint", i64: "c_long", usize: "c_size_t", "*const u8": "*const c_uchar", "*u8": "*c_uchar", "*u32": "*c_uint" };
+const allowedType =
+  /^(?:void|i32|u32|i64|usize|c_int|c_uint|c_long|c_size_t|\*const u8|\*u8|\*u32|\*const c_char|\*const c_uchar|\*c_uchar|\*c_uint|native_buffer\.(?:ReadBuffer|WriteBuffer))$/;
+const abiTypes = {
+  i32: "c_int",
+  u32: "c_uint",
+  i64: "c_long",
+  usize: "c_size_t",
+  "*const u8": "*const c_uchar",
+  "*u8": "*c_uchar",
+  "*u32": "*c_uint",
+};
 const abiType = type => abiTypes[type] || type;
-const castArgument = ({ name, type }) => abiType(type) === type ? name : `${name} ${type.startsWith("*") ? "as!" : "as"} ${type}`;
+const castArgument = ({ name, type }) =>
+  abiType(type) === type ? name : `${name} ${type.startsWith("*") ? "as!" : "as"} ${type}`;
 const bufferType = type => type === "native_buffer.ReadBuffer" || type === "native_buffer.WriteBuffer";
-const abiParameters = ({ name, type }) => bufferType(type)
-  ? [`${name}_ptr: ${type === "native_buffer.ReadBuffer" ? "*const c_uchar" : "*c_uchar"}`, `${name}_len: c_size_t`]
-  : [`${name}: ${abiType(type)}`];
-const appArgument = arg => bufferType(arg.type) ? arg.name : castArgument(arg);
+const abiParameters = ({ name, type }) =>
+  bufferType(type)
+    ? [
+        `${name}_ptr: ${type === "native_buffer.ReadBuffer" ? "*const c_uchar" : "*c_uchar"}`,
+        `${name}_len: c_size_t`,
+      ]
+    : [`${name}: ${abiType(type)}`];
+const appArgument = arg => (bufferType(arg.type) ? arg.name : castArgument(arg));
 const bufferBinding = arg => [
   `    const ${arg.name}: ${arg.type} = {`,
   `        pointer: ${arg.name}_ptr as! ${arg.type.endsWith("ReadBuffer") ? "*const u8" : "*u8"},`,
   `        length: ${arg.name}_len as usize`,
-  "    };"
+  "    };",
 ];
-const nativeTypes = { void: "void", c_int: "int", c_uint: "unsigned int", c_long: "long", c_size_t: "size_t", "*const c_char": "const char *", "*const c_uchar": "const void *", "*c_uchar": "void *", "*c_uint": "unsigned int *" };
-const nativeParameter = ({ name, type }) => bufferType(type)
-  ? [`${type === "native_buffer.ReadBuffer" ? "const void *" : "void *"}${name}_ptr`, `size_t ${name}_len`]
-  : [`${nativeTypes[abiType(type)]} ${name}`];
+const nativeTypes = {
+  void: "void",
+  c_int: "int",
+  c_uint: "unsigned int",
+  c_long: "long",
+  c_size_t: "size_t",
+  "*const c_char": "const char *",
+  "*const c_uchar": "const void *",
+  "*c_uchar": "void *",
+  "*c_uint": "unsigned int *",
+};
+const nativeParameter = ({ name, type }) =>
+  bufferType(type)
+    ? [`${type === "native_buffer.ReadBuffer" ? "const void *" : "void *"}${name}_ptr`, `size_t ${name}_len`]
+    : [`${nativeTypes[abiType(type)]} ${name}`];
 
 for (const file of files) {
   const lines = readFileSync(join(src, file), "utf8").split(/\r?\n/);
@@ -33,39 +60,60 @@ for (const file of files) {
     if (/^\s*\/\/\s*@neiv-callback\b/.test(lines[index]) && lines[index].trim() !== "// @neiv-callback")
       throw new Error(`${file}:${index + 1}: @neiv-callback takes no native symbol`);
     if (lines[index].trim() !== "// @neiv-callback") continue;
-    const declaration = lines[index + 1]?.match(/^\s*pub fn ([A-Za-z_][A-Za-z_0-9]*)\(([^)]*)\): ([^\s{]+)\s*\{/);
+    const declaration = lines[index + 1]?.match(
+      /^\s*pub fn ([A-Za-z_][A-Za-z_0-9]*)\(([^)]*)\): ([^\s{]+)\s*\{/,
+    );
     if (!declaration && /^\s*export c\(/.test(lines[index + 1] || "")) continue;
-    if (!declaration) throw new Error(`${file}:${index + 2}: callback must be a public Cyna function on the next line`);
+    if (!declaration)
+      throw new Error(`${file}:${index + 2}: callback must be a public Cyna function on the next line`);
     const [, name, parameters, result] = declaration;
-    if (!allowedType.test(result)) throw new Error(`${file}:${index + 2}: unsupported callback result ${result}`);
-    const args = parameters.trim() ? parameters.split(",").map(part => {
-      const match = part.trim().match(/^([A-Za-z_][A-Za-z_0-9]*):\s*(.+)$/);
-      if (!match || !allowedType.test(match[2]) || match[2] === "void")
-        throw new Error(`${file}:${index + 2}: unsupported callback parameter ${part}`);
-      return { name: match[1], type: match[2] };
-    }) : [];
+    if (!allowedType.test(result))
+      throw new Error(`${file}:${index + 2}: unsupported callback result ${result}`);
+    const args = parameters.trim()
+      ? parameters.split(",").map(part => {
+          const match = part.trim().match(/^([A-Za-z_][A-Za-z_0-9]*):\s*(.+)$/);
+          if (!match || !allowedType.test(match[2]) || match[2] === "void")
+            throw new Error(`${file}:${index + 2}: unsupported callback parameter ${part}`);
+          return { name: match[1], type: match[2] };
+        })
+      : [];
     if (args.some(arg => bufferType(arg.type)) && result !== "i32")
       throw new Error(`${file}:${index + 2}: borrowed buffers require an i32 status result`);
-    const abiNames = args.flatMap(arg => bufferType(arg.type) ? [`${arg.name}_ptr`, `${arg.name}_len`] : [arg.name]);
+    const abiNames = args.flatMap(arg =>
+      bufferType(arg.type) ? [`${arg.name}_ptr`, `${arg.name}_len`] : [arg.name],
+    );
     if (new Set(abiNames).size !== abiNames.length)
       throw new Error(`${file}:${index + 2}: callback parameters produce duplicate ABI names`);
-    callbacks.push({ symbol: `neiv_callback_${name}`, module: file.slice(0, -3).replaceAll("/", "."), name, args, result });
+    callbacks.push({
+      symbol: `neiv_callback_${name}`,
+      module: file.slice(0, -3).replaceAll("/", "."),
+      name,
+      args,
+      result,
+    });
   }
 }
-if (new Set(callbacks.map(item => item.symbol)).size !== callbacks.length) throw new Error("duplicate native callback symbol");
-if (new Set(callbacks.map(item => item.name)).size !== callbacks.length) throw new Error("duplicate native callback function name");
+if (new Set(callbacks.map(item => item.symbol)).size !== callbacks.length)
+  throw new Error("duplicate native callback symbol");
+if (new Set(callbacks.map(item => item.name)).size !== callbacks.length)
+  throw new Error("duplicate native callback function name");
 const lines = ["// Generated by Neiv from @neiv-callback declarations. Do not edit."];
 for (const module of new Set(callbacks.map(item => item.module))) lines.push(`import .${module};`);
-if (callbacks.some(item => item.args.some(arg => bufferType(arg.type)))) lines.push("import neiv.native_buffer;");
+if (callbacks.some(item => item.args.some(arg => bufferType(arg.type))))
+  lines.push("import neiv.native_buffer;");
 for (const item of callbacks) {
   if (!identifier.test(item.name)) throw new Error(`invalid callback name: ${item.name}`);
-  lines.push(`export c("${item.symbol}") fn neiv_callback_${item.name}(${item.args.flatMap(abiParameters).join(", ")}): ${abiType(item.result)} {`);
+  lines.push(
+    `export c("${item.symbol}") fn neiv_callback_${item.name}(${item.args.flatMap(abiParameters).join(", ")}): ${abiType(item.result)} {`,
+  );
   for (const arg of item.args.filter(arg => bufferType(arg.type))) {
     lines.push(`    if (${arg.name}_ptr as! usize) == 0 {`, "        return 1;", "    }");
   }
   for (const arg of item.args.filter(arg => bufferType(arg.type))) lines.push(...bufferBinding(arg));
   const args = item.args.map(appArgument).join(", ");
-  lines.push(`    ${item.result === "void" ? "" : "return "}${item.module.split(".").at(-1)}.${item.name}(${args})${abiType(item.result) !== item.result ? ` as ${abiType(item.result)}` : ""};`);
+  lines.push(
+    `    ${item.result === "void" ? "" : "return "}${item.module.split(".").at(-1)}.${item.name}(${args})${abiType(item.result) !== item.result ? ` as ${abiType(item.result)}` : ""};`,
+  );
   lines.push("}");
 }
 const target = join(root, "src", "generated", "neiv_generated_callbacks.cy");
@@ -76,9 +124,12 @@ const header = [
   "#ifndef NEIV_GENERATED_CALLBACKS_H",
   "#define NEIV_GENERATED_CALLBACKS_H",
   "#include <stddef.h>",
-  ...callbacks.map(item => `${nativeTypes[abiType(item.result)]} ${item.symbol}(${item.args.flatMap(nativeParameter).join(", ") || "void"});`),
+  ...callbacks.map(
+    item =>
+      `${nativeTypes[abiType(item.result)]} ${item.symbol}(${item.args.flatMap(nativeParameter).join(", ") || "void"});`,
+  ),
   "#endif",
-  ""
+  "",
 ].join("\n");
 if (check) {
   if (!existsSync(target) && callbacks.length === 0) process.exit(0);

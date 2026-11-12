@@ -11,12 +11,20 @@ export function attachNativeSlot(element: HTMLElement, slot: string): () => void
     scheduled = false;
     if (!active) return;
     const rect = element.getBoundingClientRect();
-    bridge.postMessage({ kind: "slot", slot, x: rect.x, y: rect.y,
+    bridge.postMessage({
+      kind: "slot",
+      slot,
+      x: rect.x,
+      y: rect.y,
       width: element.isConnected ? rect.width : 0,
-      height: element.isConnected ? rect.height : 0 });
+      height: element.isConnected ? rect.height : 0,
+    });
   };
   const schedule = () => {
-    if (active && !scheduled) { scheduled = true; requestAnimationFrame(send); }
+    if (active && !scheduled) {
+      scheduled = true;
+      requestAnimationFrame(send);
+    }
   };
   const observer = new ResizeObserver(schedule);
   observer.observe(element);

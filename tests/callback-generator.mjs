@@ -9,59 +9,103 @@ const generator = resolve("packages/neiv/scripts/generate-callbacks.mjs");
 const run = (...args) => spawnSync(process.execPath, [generator, ...args], { encoding: "utf8" });
 try {
   mkdirSync(join(root, "src"));
-  writeFileSync(join(root, "src/provider.cy"),
-    '// @neiv-callback\npub fn decode(bytes: *const c_uchar, length: c_size_t): c_int { return 0; }\n');
+  writeFileSync(
+    join(root, "src/provider.cy"),
+    "// @neiv-callback\npub fn decode(bytes: *const c_uchar, length: c_size_t): c_int { return 0; }\n",
+  );
   assert.equal(run(root).status, 0);
   const generated = readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8");
   assert.match(generated, /export c\("neiv_callback_decode"\) fn/);
   assert.match(generated, /provider\.decode\(bytes, length\)/);
   assert.equal(run("--check", root).status, 0);
-  writeFileSync(join(root, "src/provider.cy"),
-    '// @neiv-callback\npub fn decode(bytes: *const u8, length: usize, output: *u8, width: *u32): i32 { return 0; }\n');
+  writeFileSync(
+    join(root, "src/provider.cy"),
+    "// @neiv-callback\npub fn decode(bytes: *const u8, length: usize, output: *u8, width: *u32): i32 { return 0; }\n",
+  );
   assert.equal(run(root).status, 0);
   const typed = readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8");
-  assert.match(typed, /bytes: \*const c_uchar, length: c_size_t, output: \*c_uchar, width: \*c_uint\): c_int/);
-  assert.match(typed, /provider\.decode\(bytes as! \*const u8, length as usize, output as! \*u8, width as! \*u32\) as c_int/);
+  assert.match(
+    typed,
+    /bytes: \*const c_uchar, length: c_size_t, output: \*c_uchar, width: \*c_uint\): c_int/,
+  );
+  assert.match(
+    typed,
+    /provider\.decode\(bytes as! \*const u8, length as usize, output as! \*u8, width as! \*u32\) as c_int/,
+  );
   assert.equal(run("--check", root).status, 0);
-  writeFileSync(join(root, "src/provider.cy"),
-    '// @neiv-callback\npub fn decode(input: native_buffer.ReadBuffer, output: native_buffer.WriteBuffer): i32 { return 0; }\n');
+  writeFileSync(
+    join(root, "src/provider.cy"),
+    "// @neiv-callback\npub fn decode(input: native_buffer.ReadBuffer, output: native_buffer.WriteBuffer): i32 { return 0; }\n",
+  );
   assert.equal(run(root).status, 0);
   const buffers = readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8");
-  assert.match(buffers, /input_ptr: \*const c_uchar, input_len: c_size_t, output_ptr: \*c_uchar, output_len: c_size_t/);
+  assert.match(
+    buffers,
+    /input_ptr: \*const c_uchar, input_len: c_size_t, output_ptr: \*c_uchar, output_len: c_size_t/,
+  );
   assert.match(buffers, /if \(input_ptr as! usize\) == 0 \{\n        return 1;\n    \}/);
   assert.match(buffers, /if \(output_ptr as! usize\) == 0 \{\n        return 1;\n    \}/);
-  assert.match(buffers, /const input: native_buffer\.ReadBuffer = \{\n        pointer: input_ptr as! \*const u8,\n        length: input_len as usize\n    \};/);
+  assert.match(
+    buffers,
+    /const input: native_buffer\.ReadBuffer = \{\n        pointer: input_ptr as! \*const u8,\n        length: input_len as usize\n    \};/,
+  );
   assert.match(buffers, /provider\.decode\(input, output\) as c_int/);
   assert.equal(run("--check", root).status, 0);
-  writeFileSync(join(root, "src/provider.cy"),
-    '// @neiv-callback\npub fn decode(input: native_buffer.ReadBuffer): i32 { return 0; }\n');
+  writeFileSync(
+    join(root, "src/provider.cy"),
+    "// @neiv-callback\npub fn decode(input: native_buffer.ReadBuffer): i32 { return 0; }\n",
+  );
   assert.equal(run(root).status, 0);
-  assert.match(readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8"), /export c\("neiv_callback_decode"\)/);
-  assert.match(readFileSync(join(root, "native/generated/neiv_callbacks.h"), "utf8"), /int neiv_callback_decode\(const void \*input_ptr, size_t input_len\);/);
-  writeFileSync(join(root, "src/provider.cy"),
-    '// @neiv-callback\npub fn decode(input: native_buffer.ReadBuffer): void {}\n');
+  assert.match(
+    readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8"),
+    /export c\("neiv_callback_decode"\)/,
+  );
+  assert.match(
+    readFileSync(join(root, "native/generated/neiv_callbacks.h"), "utf8"),
+    /int neiv_callback_decode\(const void \*input_ptr, size_t input_len\);/,
+  );
+  writeFileSync(
+    join(root, "src/provider.cy"),
+    "// @neiv-callback\npub fn decode(input: native_buffer.ReadBuffer): void {}\n",
+  );
   assert.match(run(root).stderr, /borrowed buffers require an i32 status result/);
-  writeFileSync(join(root, "src/provider.cy"),
-    '// @neiv-callback\npub fn decode(input: native_buffer.ReadBuffer, input_len: usize): i32 { return 0; }\n');
+  writeFileSync(
+    join(root, "src/provider.cy"),
+    "// @neiv-callback\npub fn decode(input: native_buffer.ReadBuffer, input_len: usize): i32 { return 0; }\n",
+  );
   assert.match(run(root).stderr, /duplicate ABI names/);
-  writeFileSync(join(root, "src/provider.cy"),
-    '// @neiv-callback\nexport c("legacy_callback") fn legacy(): c_int { return 0; }\n');
+  writeFileSync(
+    join(root, "src/provider.cy"),
+    '// @neiv-callback\nexport c("legacy_callback") fn legacy(): c_int { return 0; }\n',
+  );
   assert.equal(run(root).status, 0);
-  assert.doesNotMatch(readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8"), /legacy_callback/);
-  writeFileSync(join(root, "src/provider.cy"),
-    '// @neiv-callback\npub fn decode(bytes: *const f32): i32 { return 0; }\n');
+  assert.doesNotMatch(
+    readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8"),
+    /legacy_callback/,
+  );
+  writeFileSync(
+    join(root, "src/provider.cy"),
+    "// @neiv-callback\npub fn decode(bytes: *const f32): i32 { return 0; }\n",
+  );
   assert.match(run(root).stderr, /unsupported callback parameter/);
-  writeFileSync(join(root, "src/provider.cy"),
-    '// @neiv-callback\npub fn decode(bytes: *const c_uchar, length: c_size_t): c_int { return 0; }\n' +
-    '// @neiv-callback\npub fn decode(): void {}\n');
+  writeFileSync(
+    join(root, "src/provider.cy"),
+    "// @neiv-callback\npub fn decode(bytes: *const c_uchar, length: c_size_t): c_int { return 0; }\n" +
+      "// @neiv-callback\npub fn decode(): void {}\n",
+  );
   assert.match(run(root).stderr, /duplicate native callback symbol/);
   writeFileSync(join(root, "src/provider.cy"), "pub fn no_callback(): void {}\n");
   mkdirSync(join(root, "src/dng"));
-  writeFileSync(join(root, "src/dng/provider.cy"),
-    '// @neiv-callback\npub fn decode(): i32 { return 0; }\n');
+  writeFileSync(join(root, "src/dng/provider.cy"), "// @neiv-callback\npub fn decode(): i32 { return 0; }\n");
   assert.equal(run(root).status, 0);
-  assert.match(readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8"), /import \.dng\.provider;/);
-  assert.match(readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8"), /return provider\.decode\(\) as c_int;/);
+  assert.match(
+    readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8"),
+    /import \.dng\.provider;/,
+  );
+  assert.match(
+    readFileSync(join(root, "src/generated/neiv_generated_callbacks.cy"), "utf8"),
+    /return provider\.decode\(\) as c_int;/,
+  );
   rmSync(join(root, "src/dng"), { recursive: true });
   assert.equal(run(root).status, 0);
   rmSync(join(root, "src/generated/neiv_generated_callbacks.cy"));
