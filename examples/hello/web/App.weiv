@@ -29,9 +29,9 @@
 </template>
 <script lang="ts">
   import { doubleValue, slowDouble, scoreText, sizePayload, openWindow, renameCurrent, closeCurrent, publishUpdate as publishNativeUpdate, showNativeLabel as setNativeLabel, surfaceLifecycle, fileDialogStatus } from "./generated/commands.ts";
-  import { createActionContext, popupContextMenu, dialogs, shell, clipboard, tray, notifications, setCloseHandler } from "neiv/sdk";
+  import { createActionContext, popupContextMenu, dialogs, shell, clipboard, tray, notifications, setCloseHandler } from "@neucine/neiv/sdk";
   import { events } from "./generated/events.ts";
-  import { attachNativeSlot } from "neiv/slots";
+  import { attachNativeSlot } from "@neucine/neiv/slots";
   let value = 2;
   let name = "Cyna";
   let status = "Ready";

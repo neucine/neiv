@@ -1,2 +1,2 @@
 // Generated from Cyna event declarations. Do not edit.
-export { events } from "neiv/sdk";
+export { events } from "@neucine/neiv/sdk";

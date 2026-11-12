@@ -9,7 +9,8 @@ For a new app, start with [where app code belongs](app-architecture.md).
 ## CLI
 
 Run `node /path/to/neiv/packages/neiv/bin/neiv.mjs` or use the `neiv` binary when the
-package is installed or linked. Commands accept an app directory; `build`,
+source package is linked locally. The npm package is named `@neucine/neiv` and is
+not published yet, so these instructions assume a Neiv source checkout. Commands accept an app directory; `build`,
 `run`, and `check` default to the current directory.
 
 | Command | Behavior |
@@ -20,8 +21,14 @@ package is installed or linked. Commands accept an app directory; `build`,
 | `run [directory]` | Build and open a new app instance. |
 
 The build currently requires macOS, Cyna 0.5.0, Node 22, Xcode Command Line
-Tools, and the package-provided `weivjs` dependency. The npm package can be installed
-outside the Neiv checkout.
+Tools, and the package-provided `weivjs` dependency. The source examples link to
+`packages/neiv` in this checkout.
+
+The examples target Neiv's pinned `weivjs` 0.1.2 and use its `weivUpdate`
+callback boundary. If an app selects a newer Weiv source checkout through
+`WEIV_PACKAGE_ROOT`, compile with that checkout's matching runtime and follow
+its managed state contract. The [package README](../packages/neiv/README.md)
+describes this selection.
 
 ## Cyna API
 
@@ -62,12 +69,12 @@ the native command symbol internally. App annotations do not name C symbols.
 
 The generated `web/generated/commands.ts` module exports one function per
 Cyna command. Framework services and bridge types live in
-`neiv/sdk`; `neiv/slots` handles native slot placement. The npm package includes their `.d.ts` declarations. Generated app commands and events have their own declarations. The
+`@neucine/neiv/sdk`; `@neucine/neiv/slots` handles native slot placement. The npm package includes their `.d.ts` declarations. Generated app commands and events have their own declarations. The
 example above becomes:
 
 ```ts
 import { score } from "./generated/commands.ts";
-import { CynaError } from "neiv/sdk";
+import { CynaError } from "@neucine/neiv/sdk";
 
 try {
   const result: number = await score(4);
@@ -77,7 +84,7 @@ try {
 ```
 
 Commands accept an optional final `{ signal, deadlineMs }` argument.
-`neiv/sdk` exports `events.subscribe(topic, handler)` and `events.once(topic)`.
+`@neucine/neiv/sdk` exports `events.subscribe(topic, handler)` and `events.once(topic)`.
 Built-in topics are `app.windows` and `app.lifecycle`; app declarations add
 typed topics. `neiv build` refreshes both generated app modules after Cyna
 exports change; `neiv check` reports stale generated files.
@@ -109,10 +116,10 @@ The native bridge accepts only a loopback HTTP endpoint, sends the configured he
 
 `"localHttp": true` also supports a server started outside the app: write the same JSON to `Resources/neiv-http.json` before opening the app. Keep that file outside `Resources/web` and set its permissions to owner only. The external launcher owns that server's lifecycle.
 
-In the Weiv page, import `localHttp` from `neiv/http`:
+In the Weiv page, import `localHttp` from `@neucine/neiv/http`:
 
 ```ts
-import { localHttp } from "neiv/http";
+import { localHttp } from "@neucine/neiv/http";
 const state = await localHttp.request<{ ready: boolean }>("/state");
 const stop = localHttp.subscribe("/events", "main", event => {
   if (event.kind === "data") console.log(event.value);

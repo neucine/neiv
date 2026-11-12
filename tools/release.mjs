@@ -218,7 +218,7 @@ function verify() {
     run("node", [
       "--input-type=module",
       "-e",
-      "globalThis.window={addEventListener(){}}; await import('./dist/release/smoke/package/dist/sdk.js'); await import('./dist/release/smoke/package/dist/slots.js')",
+      "globalThis.window={addEventListener(){}}; await import('./dist/release/smoke/package/dist/sdk.js'); await import('./dist/release/smoke/package/dist/slots.js'); await import('./dist/release/smoke/package/dist/http.js')",
     ]);
     if (!existsSync(join(unpack, "package/cyna-dist/packages/neiv/" + p.version + "/manifest.toml")))
       throw Error("Packed Cyna package is missing");
@@ -270,7 +270,7 @@ function tag() {
   console.log("created local annotated tag " + p.tag);
 }
 function smokeLocalSink(p, x) {
-  const mainName = project === "weiv" ? `weivjs-${p.version}.tgz` : `neiv-${p.version}.tgz`;
+  const mainName = project === "weiv" ? `weivjs-${p.version}.tgz` : `neucine-neiv-${p.version}.tgz`;
   const main = x.outputs.find(o => o.name === mainName);
   if (!main) throw Error("Local sink main package missing: " + mainName);
   const smoke = mkdtempSync(join(tmpdir(), `${project}-release-smoke-`));
@@ -293,7 +293,7 @@ function smokeLocalSink(p, x) {
         [
           "--input-type=module",
           "-e",
-          "globalThis.window={addEventListener(){}}; await import('./package/dist/sdk.js'); await import('./package/dist/slots.js')",
+          "globalThis.window={addEventListener(){}}; await import('./package/dist/sdk.js'); await import('./package/dist/slots.js'); await import('./package/dist/http.js')",
         ],
         { cwd: smoke },
       );

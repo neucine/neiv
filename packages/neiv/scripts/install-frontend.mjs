@@ -2,7 +2,7 @@ import { copyFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } fro
 import { join, resolve } from "node:path";
 
 const output = resolve(process.argv[2]);
-const packages = join(output, "__weiv_packages/neiv");
+const packages = join(output, "__weiv_packages/@neucine/neiv");
 mkdirSync(packages, { recursive: true });
 for (const name of ["sdk", "slots", "http"]) {
   copyFileSync(new URL(`../dist/${name}.js`, import.meta.url), join(packages, `${name}.js`));
@@ -17,9 +17,9 @@ function rewrite(directory) {
     if (!/\.(m?js)$/.test(entry.name)) continue;
     const source = readFileSync(path, "utf8");
     const updated = source
-      .replaceAll('"/__weiv_packages/neiv/sdk"', '"/__weiv_packages/neiv/sdk.js"')
-      .replaceAll('"/__weiv_packages/neiv/slots"', '"/__weiv_packages/neiv/slots.js"')
-      .replaceAll('"/__weiv_packages/neiv/http"', '"/__weiv_packages/neiv/http.js"');
+      .replaceAll('"/__weiv_packages/@neucine/neiv/sdk"', '"/__weiv_packages/@neucine/neiv/sdk.js"')
+      .replaceAll('"/__weiv_packages/@neucine/neiv/slots"', '"/__weiv_packages/@neucine/neiv/slots.js"')
+      .replaceAll('"/__weiv_packages/@neucine/neiv/http"', '"/__weiv_packages/@neucine/neiv/http.js"');
     if (updated !== source) writeFileSync(path, updated);
   }
 }

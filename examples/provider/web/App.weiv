@@ -14,7 +14,7 @@
 </template>
 <script lang="ts">
   import { show, hide, detachSurface as detachNative, attachSurface as attachNative, scale, focusSurface as focusNative } from "./generated/commands.ts";
-  import { attachNativeSlot } from "neiv/slots";
+  import { attachNativeSlot } from "@neucine/neiv/slots";
   let status = "Ready";
   let detachSlot: (() => void) | undefined;
   async function showSurface() {

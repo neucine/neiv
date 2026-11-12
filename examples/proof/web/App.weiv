@@ -41,7 +41,7 @@
 
 <script lang="ts">
   import { add, videoShow, videoDetach, videoAttach } from "./generated/commands.ts";
-  import { attachNativeSlot } from "neiv/slots";
+  import { attachNativeSlot } from "@neucine/neiv/slots";
 
   let count = 0;
   let status = "Ready";

@@ -9,6 +9,6 @@
     "run": "neiv run ."
   },
   "dependencies": {
-    "neiv": "0.1.0"
+    "@neucine/neiv": "file:../../packages/neiv"
   }
 }

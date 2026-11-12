@@ -1,4 +1,4 @@
 // Generated from Cyna event declarations. Do not edit.
-import { configureEvents, events } from "neiv/sdk";
+import { configureEvents, events } from "@neucine/neiv/sdk";
 configureEvents({});
 export { events };

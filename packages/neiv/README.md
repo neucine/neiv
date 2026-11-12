@@ -2,7 +2,9 @@
 
 The `neiv` package contains the CLI, TypeScript frontend API in `src/`, and macOS host. The Cyna library source lives at the repository root in `src/`; `prepack` bundles its Cyna package artifact into this npm package.
 
-Install the package in a standalone app and use `neiv new`, `neiv check`, `neiv build`, or `neiv run`. Import frontend services from `neiv/sdk` and native slot placement from `neiv/slots`. App command and event bindings are generated from Cyna exports.
+From a Neiv source checkout, install dependencies with `npm ci --prefix packages/neiv`, then run `node packages/neiv/bin/neiv.mjs new`, `check`, `build`, or `run` from the repository root. The [examples](https://github.com/neucine/neiv/tree/main/examples) link to this local package. Import frontend services from `@neucine/neiv/sdk` and native slot placement from `@neucine/neiv/slots`. App command and event bindings are generated from Cyna exports.
+
+The package name is `@neucine/neiv`, but it has not been published. The unscoped npm name `neiv` belongs to an unrelated project; do not install it expecting this framework.
 
 See the [repository README](https://github.com/neucine/neiv) for examples and requirements.
 

@@ -8,6 +8,7 @@
       "tools/**/*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css,scss}",
       "!**/node_modules/**",
       "!**/dist/**",
+      "!**/build/**",
       "!**/cyna-dist/**",
       "!examples/**/generated/**"
     ]

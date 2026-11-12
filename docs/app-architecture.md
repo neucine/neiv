@@ -16,7 +16,7 @@ module written in Cyna. The host connects them.
 2. The exported Cyna function performs the app operation. It may call Neiv's
    Cyna API for native services.
 3. The result updates the Weiv view. For later native changes, Cyna publishes
-   an event and the page subscribes through `neiv/sdk`.
+   an event and the page subscribes through `@neucine/neiv/sdk`.
 
 The starter app's button calls `increment(value)` in TypeScript. That generated
 function invokes the Cyna `increment(value: c_int)` export and returns a typed

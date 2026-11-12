@@ -1,6 +1,6 @@
 // Generated from Cyna event declarations. Do not edit.
-import { configureEvents, events } from "neiv/sdk";
-declare module "neiv/sdk" {
+import { configureEvents, events } from "@neucine/neiv/sdk";
+declare module "@neucine/neiv/sdk" {
   interface NativeEvents {
     "hello.updated": { message: string };
   }

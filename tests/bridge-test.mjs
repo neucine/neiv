@@ -32,8 +32,8 @@ const fixture = mkdtempSync(
 process.on("exit", () => rmSync(fixture, { recursive: true, force: true }));
 for (const name of ["commands", "events"]) {
   const source = readFileSync(join(generated, `${name}.js`), "utf8")
-    .replaceAll('"/__weiv_packages/neiv/sdk.js"', '"neiv/sdk"')
-    .replaceAll('"/__weiv_packages/neiv/sdk"', '"neiv/sdk"');
+    .replaceAll('"/__weiv_packages/@neucine/neiv/sdk.js"', '"@neucine/neiv/sdk"')
+    .replaceAll('"/__weiv_packages/@neucine/neiv/sdk"', '"@neucine/neiv/sdk"');
   writeFileSync(join(fixture, `${name}.js`), source);
 }
 const { doubleValue, scoreText, sizePayload, labelText, halfValue, invert, summary } = await import(

@@ -8,7 +8,7 @@ Neiv is a framework for macOS apps with a [Weiv](https://github.com/neucine/weiv
 - Cyna 0.5.0
 - Node.js 22 or later
 
-The Neiv npm package supplies its Weiv dependency. To use the CLI from this checkout, install the package dependencies first:
+The Neiv package supplies its Weiv dependency. To use the CLI from this checkout, install the package dependencies first:
 
 ```sh
 cd packages/neiv
@@ -26,22 +26,22 @@ node packages/neiv/bin/neiv.mjs check ../my-app
 node packages/neiv/bin/neiv.mjs run ../my-app
 ```
 
-`new` creates an app manifest, Cyna source, and a Weiv page. `check` validates the app and generated bindings. `run` builds the `.app` and opens it. If Neiv is installed as an npm package, the same commands are available through the `neiv` executable.
+`new` creates an app manifest, Cyna source, and a Weiv page. `check` validates the app and generated bindings. `run` builds the `.app` and opens it. The npm package is named `@neucine/neiv`; until it is published, use the CLI from this checkout. The unscoped npm name `neiv` belongs to another project.
 
 Edit `../my-app/src/lib.cy` for native app operations and `../my-app/web/App.weiv` for the interface. Neiv generates typed command and event bindings under `web/generated/`. The [app architecture guide](docs/app-architecture.md) explains where to put behavior; the [API guide](docs/api.md) covers commands, events, native services, and the CLI.
 
-For a desktop client backed by a local server, declare `localHttp` in the app manifest. Neiv can bundle and manage any server executable, and supplies the native loopback HTTP bridge, client module `neiv/http`, and macOS local networking permission. See [local HTTP client and server apps](docs/api.md#local-http-client-and-server-apps).
+For a desktop client backed by a local server, declare `localHttp` in the app manifest. Neiv can bundle and manage any server executable, and supplies the native loopback HTTP bridge, client module `@neucine/neiv/http`, and macOS local networking permission. See [local HTTP client and server apps](docs/api.md#local-http-client-and-server-apps).
 
 ## Examples
 
-The [examples](examples/README.md) are independent app projects:
+The [examples](examples/README.md) are app projects linked to this checkout:
 
 - [Hello](examples/hello) shows commands, windows, and events.
 - [Provider](examples/provider) shows an app supplied native view.
 - [Metal](examples/metal) shows an optional Metal color surface.
 - [Proof](examples/proof) shows an optional video provider.
 
-Build an example from this checkout with `node packages/neiv/bin/neiv.mjs build examples/hello`. The ordinary app does not require a Metal or video provider.
+Build an example from this checkout with `node packages/neiv/bin/neiv.mjs build examples/hello`. The ordinary app does not require a Metal or video provider. The example `package.json` files link to this checkout's `packages/neiv`; see [example setup](examples/README.md).
 
 ## Build and package
 
@@ -60,3 +60,7 @@ sh tests/m1-check.sh
 - `examples/`: standalone app examples.
 - `docs/`: public app and API guides.
 - `tests/`: build and bridge checks.
+
+## License
+
+Neiv is available under the [Mozilla Public License 2.0](LICENSE).

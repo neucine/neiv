@@ -211,8 +211,8 @@ objc.push(`    *error = CynaCommandError(@"UNKNOWN_COMMAND", @"Unsupported comma
 const commandSource =
   [
     "// Generated from Cyna command exports. Do not edit.",
-    'import { invoke } from "neiv/sdk";',
-    'import type { InvokeOptions } from "neiv/sdk";',
+    'import { invoke } from "@neucine/neiv/sdk";',
+    'import type { InvokeOptions } from "@neucine/neiv/sdk";',
     ...schema.commands.flatMap(command => {
       const params = [
         ...command.args.map(arg => `${arg.name}: ${tsType(arg.spec)}`),
@@ -230,7 +230,7 @@ const commandSource =
 const commandDeclaration =
   [
     "// Generated from Cyna command exports. Do not edit.",
-    'import type { InvokeOptions } from "neiv/sdk";',
+    'import type { InvokeOptions } from "@neucine/neiv/sdk";',
     ...schema.commands.map(command => {
       const params = [
         ...command.args.map(arg => `${arg.name}: ${tsType(arg.spec)}`),
@@ -243,12 +243,12 @@ const eventFields = Object.entries(events).map(
   ([topic, spec]) => `    ${JSON.stringify(topic)}: ${tsType(spec)};`,
 );
 const eventAugmentation = eventFields.length
-  ? ['declare module "neiv/sdk" {', "  interface NativeEvents {", ...eventFields, "  }", "}"]
+  ? ['declare module "@neucine/neiv/sdk" {', "  interface NativeEvents {", ...eventFields, "  }", "}"]
   : [];
 const eventSource =
   [
     "// Generated from Cyna event declarations. Do not edit.",
-    'import { configureEvents, events } from "neiv/sdk";',
+    'import { configureEvents, events } from "@neucine/neiv/sdk";',
     ...eventAugmentation,
     `configureEvents(${JSON.stringify(events)});`,
     "export { events };",
@@ -256,7 +256,7 @@ const eventSource =
 const eventDeclaration =
   [
     "// Generated from Cyna event declarations. Do not edit.",
-    'export { events } from "neiv/sdk";',
+    'export { events } from "@neucine/neiv/sdk";',
     ...eventAugmentation,
   ].join("\n") + "\n";
 const nativeType = type => (type === "i32" ? "c_int" : type);
