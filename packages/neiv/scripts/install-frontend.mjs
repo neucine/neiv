@@ -8,6 +8,7 @@ for (const name of ["sdk", "slots", "http"]) {
   copyFileSync(new URL(`../dist/${name}.js`, import.meta.url), join(packages, `${name}.js`));
 }
 const packageRoots = ["@neucine/neiv", "neiv"];
+const canonicalPackageRoot = "@neucine/neiv";
 function rewrite(directory) {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
@@ -20,8 +21,10 @@ function rewrite(directory) {
     let updated = source;
     for (const packageRoot of packageRoots) {
       for (const name of ["sdk", "slots", "http"]) {
-        const bare = `"/__weiv_packages/${packageRoot}/${name}"`;
-        updated = updated.replaceAll(bare, `${bare.slice(0, -1)}.js"`);
+        const request = `/__weiv_packages/${packageRoot}/${name}`;
+        const canonical = `"/__weiv_packages/${canonicalPackageRoot}/${name}.js"`;
+        updated = updated.replaceAll(`"${request}"`, canonical);
+        updated = updated.replaceAll(`"${request}.js"`, canonical);
       }
     }
     if (updated !== source) writeFileSync(path, updated);

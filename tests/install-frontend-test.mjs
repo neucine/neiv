@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -27,12 +27,15 @@ try {
 
   const app = readFileSync(join(output, "App.mjs"), "utf8");
   const panel = readFileSync(join(output, "components", "Panel.mjs"), "utf8");
-  assert.match(app, /"\/__weiv_packages\/neiv\/slots\.js"/);
+  assert.match(app, /"\/__weiv_packages\/@neucine\/neiv\/slots\.js"/);
   assert.match(app, /"\/__weiv_packages\/@neucine\/neiv\/sdk\.js"/);
-  assert.match(app, /"\/__weiv_packages\/neiv\/http\.js"/);
+  assert.match(app, /"\/__weiv_packages\/@neucine\/neiv\/http\.js"/);
   assert.match(app, /"\/__weiv_packages\/elsewhere\/slots"/);
-  assert.match(panel, /"\/__weiv_packages\/neiv\/sdk\.js"/);
-  assert.doesNotMatch(app, /"\/__weiv_packages\/(?:@neucine\/)?neiv\/(?:sdk|slots|http)"/);
+  assert.match(panel, /"\/__weiv_packages\/@neucine\/neiv\/sdk\.js"/);
+  assert.doesNotMatch(app, /"\/__weiv_packages\/neiv\/(?:sdk|slots|http)(?:\.js)?"/);
+  for (const name of ["sdk", "slots", "http"]) {
+    assert.ok(existsSync(join(output, "__weiv_packages", "@neucine", "neiv", `${name}.js`)));
+  }
   console.log("Neiv frontend package imports: passed");
 } finally {
   rmSync(output, { recursive: true, force: true });
