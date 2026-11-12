@@ -23,7 +23,9 @@ jobs:
         run: |
           node --check tools/release.mjs
           node --check packages/neiv/scripts/build-frontend.mjs
+          node --check packages/neiv/scripts/install-frontend.mjs
       - name: Run source tooling tests
         run: |
           node tests/discovery-test.mjs
           node tests/callback-generator.mjs
+          node tests/install-frontend-test.mjs
